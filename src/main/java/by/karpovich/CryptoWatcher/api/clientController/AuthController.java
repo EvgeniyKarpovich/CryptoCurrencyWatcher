@@ -1,4 +1,4 @@
-package by.karpovich.CryptoWatcher.api.controller;
+package by.karpovich.CryptoWatcher.api.clientController;
 
 import by.karpovich.CryptoWatcher.api.dto.authentification.JwtResponse;
 import by.karpovich.CryptoWatcher.api.dto.authentification.LoginForm;
@@ -24,12 +24,14 @@ public class AuthController {
     private final UserServiceImpl userServiceImpl;
 
     @PostMapping("/signin")
-    public JwtResponse authenticateUser(@Valid @RequestBody LoginForm loginForm) {
-        return userServiceImpl.signIn(loginForm);
+    public ResponseEntity<?> signIn(@Valid @RequestBody LoginForm loginForm) {
+        JwtResponse jwtResponse = userServiceImpl.signIn(loginForm);
+
+        return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationForm signUpRequest) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody RegistrationForm signUpRequest) {
         userServiceImpl.signUp(signUpRequest);
 
         return new ResponseEntity<>(String.format("%s registered successfully!", signUpRequest.getUsername()), HttpStatus.CREATED);

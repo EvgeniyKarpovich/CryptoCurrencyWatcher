@@ -33,6 +33,13 @@ public class UserEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus userStatus;
+
+    @Column(name = "image")
+    private String image;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

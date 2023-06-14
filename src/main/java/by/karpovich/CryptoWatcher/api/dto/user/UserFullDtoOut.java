@@ -1,9 +1,13 @@
 package by.karpovich.CryptoWatcher.api.dto.user;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+import java.util.Set;
+
+@Getter
+@Setter
 @Builder
 public class UserFullDtoOut {
 
@@ -11,5 +15,9 @@ public class UserFullDtoOut {
 
     private String email;
 
-    private Double balance;
+    private byte[] image;
+
+    private Set<String> roles;
+
+    private String userStatus;
 }
