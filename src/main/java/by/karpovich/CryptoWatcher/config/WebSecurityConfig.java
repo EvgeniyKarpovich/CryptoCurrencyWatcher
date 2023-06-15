@@ -56,7 +56,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/roles/**", "/api/auth/**").permitAll()
+                        auth.requestMatchers("/api/roles/**", "/api/auth/**", "/api/cryptos/**").permitAll()
                                 .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

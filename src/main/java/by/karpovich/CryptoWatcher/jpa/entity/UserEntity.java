@@ -37,6 +37,10 @@ public class UserEntity {
     @Column(name = "status")
     private UserStatus userStatus;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "crypto_id")
+    private Set<CryptoEntity> cryptos = new HashSet<>();
+
     @Column(name = "image")
     private String image;
 
