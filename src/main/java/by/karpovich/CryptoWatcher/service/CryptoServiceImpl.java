@@ -1,6 +1,7 @@
 package by.karpovich.CryptoWatcher.service;
 
 import by.karpovich.CryptoWatcher.api.dto.crypto.CoinDto;
+import by.karpovich.CryptoWatcher.api.dto.crypto.CoinListResponse;
 import by.karpovich.CryptoWatcher.api.dto.crypto.GlobalCryptoData;
 import by.karpovich.CryptoWatcher.jpa.entity.CryptoEntity;
 import by.karpovich.CryptoWatcher.jpa.repository.CryptoRepository;
@@ -17,10 +18,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -97,12 +96,83 @@ public class CryptoServiceImpl {
         }
     }
 
+    public List<CoinDto> getCoins() {
+        Integer coinsCount = getCoinsCount();
+
+        try {
+            int numThreads = Runtime.getRuntime().availableProcessors();
+            ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+            List<CompletableFuture<List<CoinDto>>> futures = new ArrayList<>();
+            for (int start = 0; start < coinsCount; start += 100) {
+                int finalStart = start;
+                CompletableFuture<List<CoinDto>> future =
+                        CompletableFuture.supplyAsync(() -> {
+                            List<CoinDto> coins = new ArrayList<>();
+                            try {
+                                OkHttpClient client = new OkHttpClient();
+                                String url = String.format("https://api.coinlore.net/api/tickers/?start=%d&limit=100", finalStart);
+                                Request request = new Request.Builder().url(url).build();
+                                Response response = client.newCall(request).execute();
+                                String responseBody = response.body().string();
+                                Gson gson = new Gson();
+                                CoinListResponse coinListResponse = gson.fromJson(responseBody, CoinListResponse.class);
+                                coins.addAll(coinListResponse.getData());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return coins;
+                        }, executor);
+                futures.add(future);
+            }
+
+            List<CoinDto> allCoins = futures.stream()
+                    .flatMap(future -> future.join().stream())
+                    .collect(Collectors.toList());
+
+            executor.shutdown();
+            return allCoins;
+
+        } catch (Exception e) {
+            System.err.println("Error executing request: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+//    @Transactional
+//    public void saveAllCoinsFrom() {
+//        List<CoinDto> allCoins = getAllCoins();
+//        for (CoinDto coinDto : allCoins) {
+//            CryptoEntity cryptoEntity = cryptoMapper.mapCryptoEntityFromCoinDto(coinDto);
+//            cryptoRepository.save(cryptoEntity);
+//        }
+//    }
+
     @Transactional
     public void saveAllCoinsFrom() {
         List<CoinDto> allCoins = getAllCoins();
+        List<CryptoEntity> cryptoEntities = new ArrayList<>();
+
         for (CoinDto coinDto : allCoins) {
             CryptoEntity cryptoEntity = cryptoMapper.mapCryptoEntityFromCoinDto(coinDto);
-            cryptoRepository.save(cryptoEntity);
+            cryptoEntities.add(cryptoEntity);
+        }
+
+        // batch insert
+        int batchSize = 1000;
+        for (int i = 0; i < cryptoEntities.size(); i += batchSize) {
+            int endIndex = Math.min(i + batchSize, cryptoEntities.size());
+            List<CryptoEntity> batch = cryptoEntities.subList(i, endIndex);
+            cryptoRepository.saveAll(batch);
         }
     }
+
+//    @Transactional
+//    public void saveAllCoinsFrom() {
+//        List<CoinDto> allCoins = getCoins();
+//        for (CoinDto coinDto : allCoins) {
+//            CryptoEntity cryptoEntity = cryptoMapper.mapCryptoEntityFromCoinDto(coinDto);
+//            cryptoRepository.save(cryptoEntity);
+//        }
+//    }
 }
