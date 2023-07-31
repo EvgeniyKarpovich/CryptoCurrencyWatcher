@@ -34,8 +34,8 @@ public class CryptoController {
         cryptoService.saveAllCoins();
     }
 
-    @PutMapping("/updates")
-    public void update() {
-        cryptoService.updateAllCoins();
-    }
+//    @PutMapping
+//    public void update() {
+//        cryptoService.updateAllCoins();
+//    }
 }
