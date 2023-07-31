@@ -22,13 +22,13 @@ public class CryptoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_from_coinLore", nullable = false)
+    @Column(name = "id_from_coinLore", nullable = false, unique = true)
     private String idFromCoinLore;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Column(name = "symbol", nullable = false)
+    @Column(name = "symbol", nullable = false, unique = true)
     private String symbol;
 
     @Column(name = "rank", nullable = false)

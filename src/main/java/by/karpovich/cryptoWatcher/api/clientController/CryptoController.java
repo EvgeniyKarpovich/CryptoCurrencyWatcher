@@ -14,24 +14,29 @@ public class CryptoController {
 
     private final CryptoServiceImpl cryptoService;
 
-    @GetMapping("/info")
-    public Integer getInfo() {
-        return cryptoService.getCoinsCount();
-    }
+//    @GetMapping("/info")
+//    public Integer getInfo() {
+//        return cryptoService.getCoinsCount();
+//    }
 
-    @GetMapping("/coins")
-    public List<CoinDto> get() {
-        return cryptoService.getCoins();
-    }
+//    @GetMapping("/coins")
+//    public List<CoinDto> get() {
+//        return cryptoService.getCoins();
+//    }
+//
+//    @GetMapping("/coins2")
+//    public List<CoinDto> get2() {
+//        return cryptoService.getAllCoins();
+//    }
 
-    @GetMapping("/coins2")
-    public List<CoinDto> get2() {
-        return cryptoService.getAllCoins();
-    }
+//    @PostMapping
+//    public void save() {
+//        cryptoService.saveAllCoins();
+//    }
 
     @PostMapping
     public void save() {
-        cryptoService.saveAllCoins();
+        cryptoService.getCoins();
     }
 
 //    @PutMapping
