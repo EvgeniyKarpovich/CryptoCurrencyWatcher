@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +73,7 @@ public class CryptoServiceImpl {
         OkHttpClient client = new OkHttpClient();
         Gson gson = new Gson();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(10); // Используйте оптимальное количество потоков
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
 
         while (true) {
             String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
@@ -101,7 +102,7 @@ public class CryptoServiceImpl {
 
         executorService.shutdown();
         try {
-            executorService.awaitTermination(1, TimeUnit.HOURS); // Подождите, пока все потоки завершатся
+            executorService.awaitTermination(2, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -137,125 +138,201 @@ public class CryptoServiceImpl {
         cryptoRepository.saveAll(cryptoEntities);
     }
 
-
-    //Получаем количество всех койнов с coinlore
-//    public Integer getCoinsCount() {
-//        Response response = null;
-//        String responseJson = "";
-//        GlobalCryptoData dto = null;
+//    @Transactional
+//    public void updateCoins() {
+//        int start = 0;
+//        int limit = 100;
 //
 //        OkHttpClient client = new OkHttpClient();
+//        Gson gson = new Gson();
 //
-//        String url = "https://api.coinlore.net/api/global/";
+//        List<CoinDto> result = new ArrayList<>();
+//        List<CryptoEntity> entitiesToUpdate = new ArrayList<>();
+//        List<CryptoEntity> entitiesToSave = new ArrayList<>();
 //
-//        Request request = new Request.Builder()
-//                .url(url)
-//                .build();
+//        while (true) {
+//            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
 //
-//        try {
-//            response = client.newCall(request).execute();
+//            String response = sendGetRequest(client, url);
 //
-//            if (response.isSuccessful()) {
-//                responseJson = response.body().string();
+//            try {
+//                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
+//                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
 //
-//                Gson gson = new Gson();
+//                result.addAll(coinsDtoFromCoinLore);
 //
-//                GlobalCryptoData[] coinDto = gson.fromJson(responseJson, GlobalCryptoData[].class);
-//                dto = coinDto[0];
+//                if (coinsDtoFromCoinLore.isEmpty()) {
+//                    break;
+//                }
+//
+//                if (coinsDtoFromCoinLore.size() < limit) {
+//                    break;
+//                }
+//
+//                start += limit;
+//            } catch (JsonSyntaxException e) {
+//                e.printStackTrace();
 //            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
 //        }
 //
-//        return dto.getCoinsCount();
-//    }
+//        for (CoinDto dto : result) {
+//            String idFromCoinLore = dto.getId();
 //
-//    //Получаю все монеты с coinlore
-//    public List<CoinDto> getAllCoins() {
-//        Integer coinsCount = getCoinsCount();
-//        try {
-//            // Создаю список будущих результатов.
-//            List<Future<List<CoinDto>>> futures = new ArrayList<>();
+//            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
 //
-//            // Создайте пул потоков с фиксированным количеством потоков.
-//            int numThreads = Runtime.getRuntime().availableProcessors();
-//            ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+//            if (cryptoEntityByIdFromCoinLore.isPresent()) {
 //
-//            // Выполняю запросы, используя пул потоков.
-//            for (int start = 0; start < coinsCount; start += 100) {
-//                Callable<List<CoinDto>> task = new CoinFetcher(start);
-//                Future<List<CoinDto>> future = executor.submit(task);
-//                futures.add(future);
+//                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
+//
+//                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
+//                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
+//                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
+//                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
+//                cryptoEntity.setRank(dto.getRank());
+//
+//                entitiesToUpdate.add(cryptoEntity);
+//            } else {
+//                entitiesToSave.add(cryptoMapper.mapCryptoEntityFromCoinDto(dto));
 //            }
+//        }
 //
-//            // Ожидание завершения всех запросов и получение результатов.
-//            List<CoinDto> allCoins = new ArrayList<>();
-//            for (Future<List<CoinDto>> future : futures) {
-//                allCoins.addAll(future.get());
-//            }
+//        if (!entitiesToSave.isEmpty()) {
+//            cryptoRepository.saveAll(entitiesToSave);
+//        }
 //
-//            // Остановка пул потоков.
-//            executor.shutdown();
-//
-//            return allCoins;
-//        } catch (Exception e) {
-//
-//            System.err.println("Ошибка при выполнении запроса: " + e.getMessage());
-//            return Collections.emptyList(); // вернуть пустой список
+//        if (!entitiesToUpdate.isEmpty()) {
+//            cryptoRepository.saveAll(entitiesToUpdate);
 //        }
 //    }
 
-//    public List<CoinDto> getCoins() {
-//        Integer coinsCount = getCoinsCount();
-//
-//        try {
-//            int numThreads = Runtime.getRuntime().availableProcessors();
-//            ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-//
-//            List<CompletableFuture<List<CoinDto>>> futures = new ArrayList<>();
-//            for (int start = 0; start < coinsCount; start += 100) {
-//                int finalStart = start;
-//                CompletableFuture<List<CoinDto>> future =
-//                        CompletableFuture.supplyAsync(() -> {
-//                            List<CoinDto> coins = new ArrayList<>();
-//                            try {
-//                                OkHttpClient client = new OkHttpClient();
-//                                String url = String.format("https://api.coinlore.net/api/tickers/?start=%d&limit=100", finalStart);
-//                                Request request = new Request.Builder().url(url).build();
-//                                Response response = client.newCall(request).execute();
-//                                String responseBody = response.body().string();
-//                                Gson gson = new Gson();
-//                                CoinListResponse coinListResponse = gson.fromJson(responseBody, CoinListResponse.class);
-//                                coins.addAll(coinListResponse.getData());
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                            return coins;
-//                        }, executor);
-//                futures.add(future);
-//            }
-//
-//            List<CoinDto> allCoins = futures.stream()
-//                    .flatMap(future -> future.join().stream())
-//                    .collect(Collectors.toList());
-//
-//            executor.shutdown();
-//            return allCoins;
-//
-//        } catch (Exception e) {
-//            System.err.println("Error executing request: " + e.getMessage());
-//            return Collections.emptyList();
-//        }
-//    }
-//
-//    @Transactional
-//    public void saveAllCoins() {
-//        List<CoinDto> allCoinsFromCoinLore = getCoins();
-//
-//        List<CryptoEntity> collect = allCoinsFromCoinLore.stream()
-//                .map(cryptoMapper::mapCryptoEntityFromCoinDto)
-//                .toList();
-//
-//        cryptoRepository.saveAll(collect);
-//    }
+    @Transactional
+    public void updateCoins() {
+        int start = 0;
+        int limit = 100;
+        int batchSize = 1000; // Размер пакета операции сохранения
+
+        OkHttpClient client = new OkHttpClient();
+        Gson gson = new Gson();
+        List<CoinDto> result = new ArrayList<>();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        while (true) {
+            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
+
+            String response = sendGetRequest(client, url);
+
+            try {
+                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
+                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
+
+                result.addAll(coinsDtoFromCoinLore);
+
+                if (coinsDtoFromCoinLore.isEmpty() || coinsDtoFromCoinLore.size() < limit) {
+                    break;
+                }
+
+                start += limit;
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        List<CryptoEntity> entitiesToSaveOrUpdate = new ArrayList<>();
+
+        for (CoinDto dto : result) {
+            String idFromCoinLore = dto.getId();
+
+            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
+
+            if (cryptoEntityByIdFromCoinLore.isPresent()) {
+                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
+
+                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
+                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
+                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
+                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
+                cryptoEntity.setRank(dto.getRank());
+
+                entitiesToSaveOrUpdate.add(cryptoEntity);
+            } else {
+                CryptoEntity newEntity = cryptoMapper.mapCryptoEntityFromCoinDto(dto);
+                entitiesToSaveOrUpdate.add(newEntity);
+            }
+
+            // Проводим пакетную операцию сохранения после каждого batchSize
+            if (entitiesToSaveOrUpdate.size() >= batchSize) {
+                cryptoRepository.saveAll(entitiesToSaveOrUpdate);
+                entitiesToSaveOrUpdate.clear();
+            }
+        }
+
+        // Сохраняем оставшиеся сущности
+        if (!entitiesToSaveOrUpdate.isEmpty()) {
+            cryptoRepository.saveAll(entitiesToSaveOrUpdate);
+        }
+    }
+
+
+    @Transactional
+    public void updateCoins1() {
+        int start = 0;
+        int limit = 100;
+
+        OkHttpClient client = new OkHttpClient();
+        Gson gson = new Gson();
+        List<CoinDto> result = new ArrayList<>();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        while (true) {
+            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
+
+            String response = sendGetRequest(client, url);
+
+            try {
+                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
+                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
+
+                result.addAll(coinsDtoFromCoinLore);
+
+                if (coinsDtoFromCoinLore.isEmpty() || coinsDtoFromCoinLore.size() < limit) {
+                    break;
+                }
+
+                start += limit;
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        List<CryptoEntity> entitiesToSaveOrUpdate = new ArrayList<>();
+
+        for (CoinDto dto : result) {
+            String idFromCoinLore = dto.getId();
+
+            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
+
+            if (cryptoEntityByIdFromCoinLore.isPresent()) {
+                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
+
+                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
+                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
+                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
+                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
+                cryptoEntity.setRank(dto.getRank());
+
+                entitiesToSaveOrUpdate.add(cryptoEntity);
+            } else {
+                CryptoEntity newEntity = cryptoMapper.mapCryptoEntityFromCoinDto(dto);
+                entitiesToSaveOrUpdate.add(newEntity);
+            }
+        }
+
+        // Batch save or update entities
+        if (!entitiesToSaveOrUpdate.isEmpty()) {
+            cryptoRepository.saveAll(entitiesToSaveOrUpdate);
+        }
+    }
+
 }

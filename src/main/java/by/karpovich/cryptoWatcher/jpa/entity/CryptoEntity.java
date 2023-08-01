@@ -25,10 +25,10 @@ public class CryptoEntity {
     @Column(name = "id_from_coinLore", nullable = false, unique = true)
     private String idFromCoinLore;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "symbol", nullable = false, unique = true)
+    @Column(name = "symbol", nullable = false)
     private String symbol;
 
     @Column(name = "rank", nullable = false)
