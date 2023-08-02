@@ -33,39 +33,6 @@ public class CryptoServiceImpl {
     private final CryptoRepository cryptoRepository;
     private final CryptoMapper cryptoMapper;
 
-//    public void getCoins() {
-//        int start = 0;
-//        int limit = 100;
-//
-//        OkHttpClient client = new OkHttpClient();
-//        Gson gson = new Gson();
-//
-//        while (true) {
-//            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
-//
-//         String   response = sendGetRequest(client, url);
-//
-//            try {
-//                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
-//                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
-//
-//                if (coinsDtoFromCoinLore.isEmpty()) {
-//                    break;
-//                }
-//
-//                saveCoins(coinsDtoFromCoinLore);
-//
-//                if (coinsDtoFromCoinLore.size() < limit) {
-//                    break;
-//                }
-//
-//                start += limit;
-//            } catch (JsonSyntaxException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
     public void getCoins() {
         int start = 0;
         int limit = 100;
@@ -138,84 +105,17 @@ public class CryptoServiceImpl {
         cryptoRepository.saveAll(cryptoEntities);
     }
 
-//    @Transactional
-//    public void updateCoins() {
-//        int start = 0;
-//        int limit = 100;
-//
-//        OkHttpClient client = new OkHttpClient();
-//        Gson gson = new Gson();
-//
-//        List<CoinDto> result = new ArrayList<>();
-//        List<CryptoEntity> entitiesToUpdate = new ArrayList<>();
-//        List<CryptoEntity> entitiesToSave = new ArrayList<>();
-//
-//        while (true) {
-//            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
-//
-//            String response = sendGetRequest(client, url);
-//
-//            try {
-//                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
-//                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
-//
-//                result.addAll(coinsDtoFromCoinLore);
-//
-//                if (coinsDtoFromCoinLore.isEmpty()) {
-//                    break;
-//                }
-//
-//                if (coinsDtoFromCoinLore.size() < limit) {
-//                    break;
-//                }
-//
-//                start += limit;
-//            } catch (JsonSyntaxException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        for (CoinDto dto : result) {
-//            String idFromCoinLore = dto.getId();
-//
-//            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
-//
-//            if (cryptoEntityByIdFromCoinLore.isPresent()) {
-//
-//                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
-//
-//                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
-//                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
-//                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
-//                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
-//                cryptoEntity.setRank(dto.getRank());
-//
-//                entitiesToUpdate.add(cryptoEntity);
-//            } else {
-//                entitiesToSave.add(cryptoMapper.mapCryptoEntityFromCoinDto(dto));
-//            }
-//        }
-//
-//        if (!entitiesToSave.isEmpty()) {
-//            cryptoRepository.saveAll(entitiesToSave);
-//        }
-//
-//        if (!entitiesToUpdate.isEmpty()) {
-//            cryptoRepository.saveAll(entitiesToUpdate);
-//        }
-//    }
-
     @Transactional
     public void updateCoins() {
         int start = 0;
         int limit = 100;
-        int batchSize = 1000; // Размер пакета операции сохранения
 
         OkHttpClient client = new OkHttpClient();
         Gson gson = new Gson();
-        List<CoinDto> result = new ArrayList<>();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        List<CoinDto> result = new ArrayList<>();
+        List<CryptoEntity> entitiesToUpdate = new ArrayList<>();
+        List<CryptoEntity> entitiesToSave = new ArrayList<>();
 
         while (true) {
             String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
@@ -228,7 +128,11 @@ public class CryptoServiceImpl {
 
                 result.addAll(coinsDtoFromCoinLore);
 
-                if (coinsDtoFromCoinLore.isEmpty() || coinsDtoFromCoinLore.size() < limit) {
+                if (coinsDtoFromCoinLore.isEmpty()) {
+                    break;
+                }
+
+                if (coinsDtoFromCoinLore.size() < limit) {
                     break;
                 }
 
@@ -238,14 +142,13 @@ public class CryptoServiceImpl {
             }
         }
 
-        List<CryptoEntity> entitiesToSaveOrUpdate = new ArrayList<>();
-
         for (CoinDto dto : result) {
             String idFromCoinLore = dto.getId();
 
             Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
 
             if (cryptoEntityByIdFromCoinLore.isPresent()) {
+
                 CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
 
                 cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
@@ -254,85 +157,18 @@ public class CryptoServiceImpl {
                 cryptoEntity.setPriceInUSD(dto.getPriceUsd());
                 cryptoEntity.setRank(dto.getRank());
 
-                entitiesToSaveOrUpdate.add(cryptoEntity);
+                entitiesToUpdate.add(cryptoEntity);
             } else {
-                CryptoEntity newEntity = cryptoMapper.mapCryptoEntityFromCoinDto(dto);
-                entitiesToSaveOrUpdate.add(newEntity);
-            }
-
-            // Проводим пакетную операцию сохранения после каждого batchSize
-            if (entitiesToSaveOrUpdate.size() >= batchSize) {
-                cryptoRepository.saveAll(entitiesToSaveOrUpdate);
-                entitiesToSaveOrUpdate.clear();
+                entitiesToSave.add(cryptoMapper.mapCryptoEntityFromCoinDto(dto));
             }
         }
 
-        // Сохраняем оставшиеся сущности
-        if (!entitiesToSaveOrUpdate.isEmpty()) {
-            cryptoRepository.saveAll(entitiesToSaveOrUpdate);
+        if (!entitiesToSave.isEmpty()) {
+            cryptoRepository.saveAll(entitiesToSave);
+        }
+
+        if (!entitiesToUpdate.isEmpty()) {
+            cryptoRepository.saveAll(entitiesToUpdate);
         }
     }
-
-
-    @Transactional
-    public void updateCoins1() {
-        int start = 0;
-        int limit = 100;
-
-        OkHttpClient client = new OkHttpClient();
-        Gson gson = new Gson();
-        List<CoinDto> result = new ArrayList<>();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-
-        while (true) {
-            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
-
-            String response = sendGetRequest(client, url);
-
-            try {
-                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
-                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
-
-                result.addAll(coinsDtoFromCoinLore);
-
-                if (coinsDtoFromCoinLore.isEmpty() || coinsDtoFromCoinLore.size() < limit) {
-                    break;
-                }
-
-                start += limit;
-            } catch (JsonSyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-
-        List<CryptoEntity> entitiesToSaveOrUpdate = new ArrayList<>();
-
-        for (CoinDto dto : result) {
-            String idFromCoinLore = dto.getId();
-
-            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
-
-            if (cryptoEntityByIdFromCoinLore.isPresent()) {
-                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
-
-                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
-                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
-                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
-                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
-                cryptoEntity.setRank(dto.getRank());
-
-                entitiesToSaveOrUpdate.add(cryptoEntity);
-            } else {
-                CryptoEntity newEntity = cryptoMapper.mapCryptoEntityFromCoinDto(dto);
-                entitiesToSaveOrUpdate.add(newEntity);
-            }
-        }
-
-        // Batch save or update entities
-        if (!entitiesToSaveOrUpdate.isEmpty()) {
-            cryptoRepository.saveAll(entitiesToSaveOrUpdate);
-        }
-    }
-
 }

@@ -1,45 +1,26 @@
 package by.karpovich.cryptoWatcher.utils;
 
+import by.karpovich.cryptoWatcher.service.CryptoServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class Scheduled {
-//
-//    private final CryptoServiceImpl cryptoService;
-//
-//    private static final int PERIOD_MINUTES = 1;
-//    private static final int INITIAL_DELAY = 0;
-//    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-//
-//    public void start() {
-//        scheduler.scheduleAtFixedRate(this::updateCoins, INITIAL_DELAY, PERIOD_MINUTES, TimeUnit.MINUTES);
-//    }
-//
-//    public void stop() {
-//        scheduler.shutdown();
-//    }
-//
-//    private void updateCoins() {
-//        cryptoService.updateAllCoins();
-//    }
 
-//    private final CryptoServiceImpl cryptoService;
-//
-//    private void updatePrice() {
-//        cryptoService.saveAllCoins2();
-//    }
-//
-//    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-//
-//    @PostConstruct
-//    public void startUpdating() {
-//        executorService.scheduleAtFixedRate(this::updatePrice, 0, 1, TimeUnit.MINUTES);
-//    }
-//
-//    @PreDestroy
-//    public void stopUpdating() {
-//        executorService.shutdown();
-//    }
+    private final CryptoServiceImpl cryptoService;
+    private static final int FIXED_RATE_IN_MILLISECONDS = 300000;
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = FIXED_RATE_IN_MILLISECONDS)
+    public void updateCoins() {
+        try {
+            cryptoService.updateCoins();
+            log.info("Монеты успешно обновлены.");
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении монет.", e);
+        }
+    }
 }
