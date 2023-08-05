@@ -42,4 +42,16 @@ public class CryptoMapper {
 
         return cryptoEntities;
     }
+
+    public CryptoEntity mapCryptoEntityForUpdateFromCoinDto(CoinDto coinDto) {
+        return Optional.ofNullable(coinDto)
+                .map(dto -> CryptoEntity.builder()
+                        .percentChange1h(dto.getPercentChange1h())
+                        .percentChange7d(dto.getPercentChange7d())
+                        .percentChange24h(dto.getPercentChange24h())
+                        .priceInUSD(dto.getPriceUsd())
+                        .rank(dto.getRank())
+                        .build())
+                .orElse(null);
+    }
 }

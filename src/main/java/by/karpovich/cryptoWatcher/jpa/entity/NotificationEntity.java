@@ -7,6 +7,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -14,37 +16,34 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "cryptos")
+@Table(name = "notifications")
 @EntityListeners(AuditingEntityListener.class)
-public class CryptoEntity {
+public class NotificationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_from_coinLore", nullable = false)
-    private String idFromCoinLore;
+    @Column(name = "sender")
+    private String sender;
 
-    @Column(name = "name", nullable = false)
+
+//    private List<CryptoEntity> cryptos = new ArrayList<>();
+
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "symbol", nullable = false)
-    private String symbol;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "users_notifications",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "notification_id"))
+    private List<UserEntity> users = new ArrayList<>();
 
-    @Column(name = "rank", nullable = false)
-    private Integer rank;
+    @Column(name = "message")
+    private String message;
 
-    @Column(name = "price_in_usd", nullable = false)
-    private String priceInUSD;
-
-    @Column(name = "percent_change_24h", nullable = false)
-    private String percentChange24h;
-
-    @Column(name = "percent_change_1h", nullable = false)
-    private String percentChange1h;
-
-    @Column(name = "percent_change_7d", nullable = false)
-    private String percentChange7d;
+    @Column(name = "percent_change")
+    private String percentChange;
 
     @CreatedDate
     @Column(name = "date_of_creation", updatable = false)

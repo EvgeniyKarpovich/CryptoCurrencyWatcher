@@ -16,7 +16,7 @@ public class CryptoController {
 
     @PostMapping
     public void save() {
-        cryptoService.getCoins();
+        cryptoService.saveResult();
     }
 
     @PutMapping

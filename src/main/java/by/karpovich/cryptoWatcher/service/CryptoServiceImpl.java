@@ -3,7 +3,9 @@ package by.karpovich.cryptoWatcher.service;
 import by.karpovich.cryptoWatcher.api.dto.crypto.CoinDto;
 import by.karpovich.cryptoWatcher.api.dto.crypto.CoinListResponse;
 import by.karpovich.cryptoWatcher.jpa.entity.CryptoEntity;
+import by.karpovich.cryptoWatcher.jpa.entity.UserEntity;
 import by.karpovich.cryptoWatcher.jpa.repository.CryptoRepository;
+import by.karpovich.cryptoWatcher.jpa.repository.UserRepository;
 import by.karpovich.cryptoWatcher.mapping.CryptoMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -19,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +33,9 @@ public class CryptoServiceImpl {
 
     private final CryptoRepository cryptoRepository;
     private final CryptoMapper cryptoMapper;
+    private final UserRepository userRepository;
 
-    public void getCoins() {
+    public void saveResult() {
         int start = 0;
         int limit = 100;
 
@@ -51,7 +53,7 @@ public class CryptoServiceImpl {
                 CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
                 List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
 
-                if (coinsDtoFromCoinLore.isEmpty()) {
+                if (coinsDtoFromCoinLore.isEmpty() ) {
                     break;
                 }
 
@@ -75,24 +77,6 @@ public class CryptoServiceImpl {
         }
     }
 
-
-    private String sendGetRequest(OkHttpClient client, String url) {
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            ResponseBody responseBody = response.body();
-            if (responseBody != null) {
-                return responseBody.string();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
     @Transactional
     private void saveCoins(List<CoinDto> coinsDto) {
         List<CryptoEntity> cryptoEntities = new ArrayList<>();
@@ -104,6 +88,94 @@ public class CryptoServiceImpl {
 
         cryptoRepository.saveAll(cryptoEntities);
     }
+
+    private String sendGetRequest(OkHttpClient client, String url) {
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                ResponseBody responseBody = response.body();
+                if (responseBody != null) {
+                    return responseBody.string();
+                }
+            } else {
+                // Обработка ошибки, если требуется
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+//    @Transactional
+//    public void updateCoins() {
+//        int start = 0;
+//        int limit = 100;
+//
+//        OkHttpClient client = new OkHttpClient();
+//        Gson gson = new Gson();
+//
+//        List<CoinDto> result = new ArrayList<>();
+//        List<CryptoEntity> entitiesToUpdate = new ArrayList<>();
+//        List<CryptoEntity> entitiesToSave = new ArrayList<>();
+//
+//        while (true) {
+//            String url = "https://api.coinlore.net/api/tickers/?start=" + start + "&limit=" + limit;
+//
+//            String response = sendGetRequest(client, url);
+//
+//            try {
+//                CoinListResponse coinListResponse = gson.fromJson(response, CoinListResponse.class);
+//                List<CoinDto> coinsDtoFromCoinLore = coinListResponse.getData();
+//
+//                result.addAll(coinsDtoFromCoinLore);
+//
+//                if (coinsDtoFromCoinLore.isEmpty()) {
+//                    break;
+//                }
+//
+//                if (coinsDtoFromCoinLore.size() < limit) {
+//                    break;
+//                }
+//
+//                start += limit;
+//            } catch (JsonSyntaxException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        for (CoinDto dto : result) {
+//            String idFromCoinLore = dto.getId();
+//
+//            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
+//
+//            if (cryptoEntityByIdFromCoinLore.isPresent()) {
+//
+//                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
+//
+//                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
+//                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
+//                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
+//                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
+//                cryptoEntity.setRank(dto.getRank());
+//
+//                entitiesToUpdate.add(cryptoEntity);
+//            } else {
+//                entitiesToSave.add(cryptoMapper.mapCryptoEntityFromCoinDto(dto));
+//            }
+//        }
+//
+//        if (!entitiesToSave.isEmpty()) {
+//            cryptoRepository.saveAll(entitiesToSave);
+//        }
+//
+//        if (!entitiesToUpdate.isEmpty()) {
+//            cryptoRepository.saveAll(entitiesToUpdate);
+//        }
+//    }
 
     @Transactional
     public void updateCoins() {
@@ -143,19 +215,9 @@ public class CryptoServiceImpl {
         }
 
         for (CoinDto dto : result) {
-            String idFromCoinLore = dto.getId();
+            if (checkCryptoEntityByIdFromCoinLore(dto.getId())) {
 
-            Optional<CryptoEntity> cryptoEntityByIdFromCoinLore = cryptoRepository.findByIdFromCoinLore(idFromCoinLore);
-
-            if (cryptoEntityByIdFromCoinLore.isPresent()) {
-
-                CryptoEntity cryptoEntity = cryptoEntityByIdFromCoinLore.get();
-
-                cryptoEntity.setPercentChange1h(dto.getPercentChange1h());
-                cryptoEntity.setPercentChange7d(dto.getPercentChange7d());
-                cryptoEntity.setPercentChange24h(dto.getPercentChange24h());
-                cryptoEntity.setPriceInUSD(dto.getPriceUsd());
-                cryptoEntity.setRank(dto.getRank());
+                CryptoEntity cryptoEntity = cryptoMapper.mapCryptoEntityForUpdateFromCoinDto(dto);
 
                 entitiesToUpdate.add(cryptoEntity);
             } else {
@@ -170,5 +232,31 @@ public class CryptoServiceImpl {
         if (!entitiesToUpdate.isEmpty()) {
             cryptoRepository.saveAll(entitiesToUpdate);
         }
+    }
+
+    public boolean checkCryptoEntityByIdFromCoinLore(String idFromCoinLore) {
+        return cryptoRepository.findByIdFromCoinLore(idFromCoinLore).isPresent();
+    }
+
+    //при установке значения "процент"  сделать проверку на налл и >0
+    public boolean checkChangePrice(String oldPrice, String newPrice) {
+        List<UserEntity> usersWithApplicationNotification = userRepository.findAllWithApplicationNotification();
+
+        for (UserEntity user : usersWithApplicationNotification) {
+
+            if (!user.getCryptos().isEmpty()) {
+
+                double oldPriceValue = Double.parseDouble(oldPrice);
+                double newPriceValue = Double.parseDouble(newPrice);
+                double percentValue = Double.parseDouble(user.getPercent());
+
+                double difference = Math.abs((newPriceValue - oldPriceValue) / oldPriceValue * 100);
+
+                if (difference >= percentValue) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -5,6 +5,7 @@ import by.karpovich.cryptoWatcher.jpa.entity.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +22,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, PagingA
     Page<UserEntity> findAll(Pageable pageable);
 
     List<UserEntity> findByUserStatus(UserStatus userStatus);
+
+    @Query("SELECT u FROM UserEntity u WHERE u.applicationNotification = true")
+    List<UserEntity> findAllWithApplicationNotification();
 }

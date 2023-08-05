@@ -7,7 +7,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -41,8 +43,20 @@ public class UserEntity {
     @JoinColumn(name = "crypto_id")
     private Set<CryptoEntity> cryptos = new HashSet<>();
 
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    private List<NotificationEntity> notifications = new ArrayList<>();
+
     @Column(name = "image")
     private String image;
+
+    @Column(name = "percent")
+    private String percent;
+
+//    @Column(name = "email_notification", columnDefinition = "boolean default false")
+//    private boolean emailNotification;
+
+    @Column(name = "application_notification", columnDefinition = "boolean default false")
+    private boolean applicationNotification;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
