@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
         List<UserDtoForFindAll> usersDto = userMapper.mapListUserDtoForFindAllFromListEntity(content);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("Users", usersDto);
+        response.put("users", usersDto);
         response.put("currentPage", usersEntity.getNumber());
         response.put("totalItems", usersEntity.getTotalElements());
         response.put("totalPages", usersEntity.getTotalPages());

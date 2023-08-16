@@ -1,7 +1,6 @@
 package by.karpovich.security.api.controllers.adminController;
 
 import by.karpovich.security.api.dto.role.RoleDto;
-import by.karpovich.security.jpa.entity.RoleEntity;
 import by.karpovich.security.service.RoleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,23 +18,23 @@ public class AdminRolesController {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody RoleDto dto) {
-        RoleEntity roleEntity = roleServiceImpl.saveRole(dto);
+        roleServiceImpl.saveRole(dto);
 
-        return new ResponseEntity<>(roleEntity, HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable("id") Long id) {
-        RoleDto roleById = roleServiceImpl.findRoleById(id);
+        RoleDto roleDto = roleServiceImpl.findRoleById(id);
 
-        return new ResponseEntity<>(roleById, HttpStatus.OK);
+        return new ResponseEntity<>(roleDto, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<?> findAll() {
-        List<RoleDto> roles = roleServiceImpl.findRolesAll();
+        List<RoleDto> rolesDto = roleServiceImpl.findRolesAll();
 
-        return new ResponseEntity<>(roles, HttpStatus.OK);
+        return new ResponseEntity<>(rolesDto, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

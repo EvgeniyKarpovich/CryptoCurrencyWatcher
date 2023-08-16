@@ -1,15 +1,15 @@
 package by.karpovich.security.api.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDtoForFindAll {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
