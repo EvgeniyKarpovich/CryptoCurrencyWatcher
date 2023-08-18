@@ -18,11 +18,12 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class RoleServiceImpl {
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
 
+    @Override
     @Transactional
     public RoleFullDtoOut saveRole(RoleDto dto) {
         validateAlreadyExists(dto, null);
@@ -44,6 +45,7 @@ public class RoleServiceImpl {
         return userRoles;
     }
 
+    @Override
     public RoleDto findRoleById(Long id) {
         var role = roleRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("Role with id = %s not found", id)));
@@ -51,12 +53,14 @@ public class RoleServiceImpl {
         return roleMapper.mapDtoFromEntity(role);
     }
 
+    @Override
     public List<RoleDto> findRolesAll() {
         List<RoleEntity> roles = roleRepository.findAll();
 
         return roleMapper.mapListDtoFromListEntity(roles);
     }
 
+    @Override
     @Transactional
     public RoleDto updateRoleById(Long id, RoleDto dto) {
         validateAlreadyExists(dto, id);
@@ -68,6 +72,7 @@ public class RoleServiceImpl {
         return roleMapper.mapDtoFromEntity(updated);
     }
 
+    @Override
     @Transactional
     public void deleteRoleById(Long id) {
         if (roleRepository.findById(id).isPresent()) {

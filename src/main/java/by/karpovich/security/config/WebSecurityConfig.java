@@ -57,7 +57,7 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/admin/roles/**", "/api/auth/**", "/api/admin/users/**").permitAll()
+                        auth.requestMatchers("/api/admin/roles/**", "/api/auth/**", "/api/admin/users/**").permitAll() //это для тестового режима
                                 .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

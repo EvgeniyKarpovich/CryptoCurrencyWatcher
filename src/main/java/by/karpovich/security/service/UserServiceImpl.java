@@ -30,28 +30,32 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
     private final JwtResponseMapper jwtResponseMapper;
 
+    @Override
     @Transactional
     public void signUp(RegistrationForm dto) {
         userRepository.save(userMapper.mapEntityFromDtoForRegForm(dto));
     }
 
+    @Override
     @Transactional
     public JwtResponse signIn(LoginForm loginForm) {
         return jwtResponseMapper.mapJwtResponseFromLoginForm(loginForm);
     }
 
+    @Override
     public UserDtoFullOut getYourselfBack(String token) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
         return userMapper.mapUserFullDtoFromEntity(userEntity);
     }
 
+    @Override
     public UserDtoFullOut findById(Long id) {
         Optional<UserEntity> optionalUser = userRepository.findById(id);
         UserEntity userEntity = optionalUser.orElseThrow(
@@ -61,6 +65,7 @@ public class UserServiceImpl {
         return userMapper.mapUserFullDtoFromEntity(userEntity);
     }
 
+    @Override
     @Transactional
     public UserDtoFullOut updateUserById(String token, UserDtoForUpdate dto) {
         Long userIdFromToken = getUserIdFromToken(token);
@@ -72,6 +77,7 @@ public class UserServiceImpl {
         return userMapper.mapUserFullDtoFromEntity(updatedUser);
     }
 
+    @Override
     public Map<String, Object> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dateOfCreation").descending());
         Page<UserEntity> usersEntity = userRepository.findAll(pageable);
@@ -88,6 +94,7 @@ public class UserServiceImpl {
         return response;
     }
 
+    @Override
     public List<UserDtoForFindAll> getUsersByStatus(String status) {
         UserStatus userStatus = switch (status.toUpperCase()) {
             case "ACTIVE" -> UserStatus.ACTIVE;
@@ -101,6 +108,7 @@ public class UserServiceImpl {
         return userMapper.mapListUserDtoForFindAllFromListEntity(userByStatus);
     }
 
+    @Override
     @Transactional
     public void deleteUserById(String token) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
@@ -108,6 +116,7 @@ public class UserServiceImpl {
         userEntity.setUserStatus(UserStatus.DELETED);
     }
 
+    @Override
     @Transactional
     public void addImage(String token, MultipartFile file) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
@@ -116,7 +125,7 @@ public class UserServiceImpl {
         userRepository.save(userEntity);
     }
 
-    public UserEntity findUserByIdWhichWillReturnModel(Long id) {
+    private UserEntity findUserByIdWhichWillReturnModel(Long id) {
         return userRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("User with username = %s not found", id))
         );

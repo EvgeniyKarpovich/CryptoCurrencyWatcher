@@ -16,12 +16,7 @@ public class ReqresTest {
 
     private static final String BASE_URI = "http://localhost:8081";
     private static final String BASE_PATH = "/api/admin";
-
-    private static   Long roleId;
-
-    public static void setRoleId(Long roleId) {
-        ReqresTest.roleId = roleId;
-    }
+    private static final Long TEST_ROLE_ID = 62L;
 
     @BeforeEach
     public void setup() {
@@ -33,27 +28,29 @@ public class ReqresTest {
     @Order(1)
     public void testCreateRole() {
         RoleDto requestDto = RoleDto.builder()
-                .name("Test Role")
+                .name("Test Role 11111111")
                 .build();
 
-        Response response = given()
+        given()
                 .contentType(ContentType.JSON)
                 .body(requestDto)
                 .when()
                 .post("/roles")
                 .then()
-                .statusCode(HttpStatus.CREATED.value())
-                .extract()
-                .response();
+                .statusCode(HttpStatus.CREATED.value());
+//                .extract()
+//                .response();
 
-        setRoleId(response.jsonPath().getLong("id"));
+//       response.jsonPath().getLong("id");
+
     }
 
     @Test
+    @Order(2)
     public void findRoleById() {
         String expectedRoleName = given()
                 .contentType(ContentType.JSON)
-                .pathParam("id", roleId)
+                .pathParam("id", TEST_ROLE_ID)
                 .when()
                 .get("/roles/{id}")
                 .then()
@@ -63,7 +60,7 @@ public class ReqresTest {
 
         given()
                 .contentType(ContentType.JSON)
-                .pathParam("id", roleId)
+                .pathParam("id", TEST_ROLE_ID)
                 .when()
                 .get("roles/{id}")
                 .then()
@@ -93,33 +90,34 @@ public class ReqresTest {
     @Test
     public void updateRole() {
         RoleDto requestDto = RoleDto.builder()
-                .name("ROLE_MODERATOR")
+                .name("ROLE_MODERATOR11111111111111111")
                 .build();
 
         given()
-                .contentType("application/json")
+                .contentType(ContentType.JSON)
                 .body(requestDto)
                 .when()
-                .put("/roles/{id}", roleId)
+                .put("/roles/{id}", TEST_ROLE_ID)
                 .then()
-                .statusCode(HttpStatus.UPGRADE_REQUIRED.value())
-                .body("name", equalTo("ROLE_MODERATOR"));
+                .statusCode(HttpStatus.OK.value())
+                .body("name", equalTo("ROLE_MODERATOR11111111111111111"));
     }
 
 
     @Test
     public void testDeleteRoleById() {
+
         given()
                 .contentType(ContentType.JSON)
                 .when()
-                .delete("/roles/{id}", roleId)
+                .delete("/roles/{id}", TEST_ROLE_ID)
                 .then()
                 .statusCode(HttpStatus.OK.value());
 
         given()
                 .contentType(ContentType.JSON)
                 .when()
-                .get("/roles/{id}", roleId)
+                .get("/roles/{id}", TEST_ROLE_ID)
                 .then()
                 .statusCode(HttpStatus.NOT_FOUND.value());
     }

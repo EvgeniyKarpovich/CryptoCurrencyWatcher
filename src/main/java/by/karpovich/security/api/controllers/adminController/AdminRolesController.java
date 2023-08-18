@@ -1,8 +1,8 @@
 package by.karpovich.security.api.controllers.adminController;
 
+import by.karpovich.security.api.facades.RoleFacade;
 import by.karpovich.security.api.dto.role.RoleDto;
 import by.karpovich.security.api.dto.role.RoleFullDtoOut;
-import by.karpovich.security.service.RoleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,40 +15,40 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminRolesController {
 
-    private final RoleServiceImpl roleServiceImpl;
+    private final RoleFacade rolesFacade;
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody RoleDto dto) {
-        RoleFullDtoOut roleFullDtoOut = roleServiceImpl.saveRole(dto);
+    public ResponseEntity<RoleFullDtoOut> save(@RequestBody RoleDto dto) {
+        RoleFullDtoOut roleDtoOut = rolesFacade.saveRole(dto);
 
-        return new ResponseEntity<>(roleFullDtoOut, HttpStatus.CREATED);
+        return new ResponseEntity<>(roleDtoOut, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable("id") Long id) {
-        RoleDto roleDto = roleServiceImpl.findRoleById(id);
+    public ResponseEntity<RoleDto> findById(@PathVariable("id") Long id) {
+        RoleDto roleDto = rolesFacade.findRoleById(id);
 
         return new ResponseEntity<>(roleDto, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll() {
-        List<RoleDto> rolesDto = roleServiceImpl.findRolesAll();
+    public ResponseEntity<List<RoleDto>> findAll() {
+        List<RoleDto> rolesDto = rolesFacade.findRolesAll();
 
         return new ResponseEntity<>(rolesDto, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@RequestBody RoleDto dto,
-                                    @PathVariable("id") Long id) {
-        RoleDto roleDto = roleServiceImpl.updateRoleById(id, dto);
+    public ResponseEntity<RoleDto> update(@RequestBody RoleDto dto,
+                                          @PathVariable("id") Long id) {
+        RoleDto roleDto = rolesFacade.updateRoleById(id, dto);
 
         return new ResponseEntity<>(roleDto, HttpStatus.UPGRADE_REQUIRED);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteById(@PathVariable("id") Long id) {
-        roleServiceImpl.deleteRoleById(id);
+        rolesFacade.deleteRoleById(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

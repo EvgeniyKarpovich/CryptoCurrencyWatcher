@@ -3,7 +3,7 @@ package by.karpovich.security.api.controllers.clientController;
 import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.authentification.RegistrationForm;
-import by.karpovich.security.service.UserServiceImpl;
+import by.karpovich.security.api.facades.UserFacade;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -21,18 +21,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserServiceImpl userServiceImpl;
+    private final UserFacade userFacade;
 
     @PostMapping("/signin")
     public ResponseEntity<?> signIn(@Valid @RequestBody LoginForm loginForm) {
-        JwtResponse jwtResponse = userServiceImpl.signIn(loginForm);
+        JwtResponse jwtResponse = userFacade.signIn(loginForm);
 
         return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody RegistrationForm signUpRequest) {
-        userServiceImpl.signUp(signUpRequest);
+        userFacade.signUp(signUpRequest);
 
         return new ResponseEntity<>(String.format("%s registered successfully!", signUpRequest.getUsername()), HttpStatus.CREATED);
     }
