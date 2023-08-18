@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserForUpdate {
+public class UserDtoForUpdate {
 
     @ValidUsername
     @NotBlank(message = "Enter name")

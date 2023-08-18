@@ -3,9 +3,9 @@ package by.karpovich.security;
 import by.karpovich.security.api.dto.role.RoleDto;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.parsing.Parser;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
@@ -15,8 +15,13 @@ import static org.hamcrest.Matchers.*;
 public class ReqresTest {
 
     private static final String BASE_URI = "http://localhost:8081";
-    private static final String BASE_PATH = "/api/admin/";
-    private static final Long ROLE_ID = 3L;
+    private static final String BASE_PATH = "/api/admin";
+
+    private static   Long roleId;
+
+    public static void setRoleId(Long roleId) {
+        ReqresTest.roleId = roleId;
+    }
 
     @BeforeEach
     public void setup() {
@@ -25,14 +30,32 @@ public class ReqresTest {
     }
 
     @Test
+    @Order(1)
+    public void testCreateRole() {
+        RoleDto requestDto = RoleDto.builder()
+                .name("Test Role")
+                .build();
+
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .body(requestDto)
+                .when()
+                .post("/roles")
+                .then()
+                .statusCode(HttpStatus.CREATED.value())
+                .extract()
+                .response();
+
+        setRoleId(response.jsonPath().getLong("id"));
+    }
+
+    @Test
     public void findRoleById() {
-        // достаем сразу роль по id затем подставляем  в ожидаемый результат ,
-        // чтобы не сломать тест  в случае замены роли  по этой id
         String expectedRoleName = given()
                 .contentType(ContentType.JSON)
-                .pathParam("id", ROLE_ID)
+                .pathParam("id", roleId)
                 .when()
-                .get("roles/{id}")
+                .get("/roles/{id}")
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -40,13 +63,14 @@ public class ReqresTest {
 
         given()
                 .contentType(ContentType.JSON)
-                .pathParam("id", ROLE_ID)
+                .pathParam("id", roleId)
                 .when()
                 .get("roles/{id}")
                 .then()
                 .statusCode(HttpStatus.OK.value())
                 .body("name", equalTo(expectedRoleName));
     }
+
 
     @Test
     public void findAllRoles() {
@@ -62,6 +86,8 @@ public class ReqresTest {
 
         String responseBody = response.getBody().asString();
         System.out.println(responseBody);
+
+
     }
 
     @Test
@@ -74,45 +100,30 @@ public class ReqresTest {
                 .contentType("application/json")
                 .body(requestDto)
                 .when()
-                .put("/roles/{id}", 1)
+                .put("/roles/{id}", roleId)
                 .then()
                 .statusCode(HttpStatus.UPGRADE_REQUIRED.value())
                 .body("name", equalTo("ROLE_MODERATOR"));
     }
 
-//    @Test
-//    public void createRole() {
-//        RoleDto requestDto = RoleDto.builder()
-//                .name("ROLE_MANAGER")
-//                .build();
-//
-//        given()
-//                .contentType("application/json")
-//                .body(requestDto)
-//                .when()
-//                .post("/roles")
-//                .then()
-//                .statusCode(HttpStatus.CREATED.value())
-//                .body("name", equalTo("ROLE_MANAGER"));
-//    }
 
-//    @Test
-//    public void testCreateRole() {
-//        RestAssured.defaultParser = Parser.JSON;
-//
-//        RoleDto requestDto = RoleDto.builder()
-//                .name("ROLE_MANAGER222222")
-//                .build();
-//
-//        given()
-//                .contentType("application/json")
-//                .body(requestDto)
-//                .when()
-//                .post("/roles")
-//                .then()
-//                .statusCode(HttpStatus.CREATED.value())
-//                .body("name", equalTo("ROLE_MANAGER222222"));
-//    }
+    @Test
+    public void testDeleteRoleById() {
+        given()
+                .contentType(ContentType.JSON)
+                .when()
+                .delete("/roles/{id}", roleId)
+                .then()
+                .statusCode(HttpStatus.OK.value());
+
+        given()
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/roles/{id}", roleId)
+                .then()
+                .statusCode(HttpStatus.NOT_FOUND.value());
+    }
+
 
 }
 

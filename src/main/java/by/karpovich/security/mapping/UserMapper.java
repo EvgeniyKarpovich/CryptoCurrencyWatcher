@@ -2,8 +2,8 @@ package by.karpovich.security.mapping;
 
 import by.karpovich.security.api.dto.authentification.RegistrationForm;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
-import by.karpovich.security.api.dto.user.UserForUpdate;
-import by.karpovich.security.api.dto.user.UserFullDtoOut;
+import by.karpovich.security.api.dto.user.UserDtoForUpdate;
+import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import by.karpovich.security.jpa.entity.UserEntity;
 import by.karpovich.security.jpa.entity.UserStatus;
@@ -40,7 +40,7 @@ public class UserMapper {
                 .build();
     }
 
-    public UserEntity mapEntityFromUpdateDto(UserForUpdate dto) {
+    public UserEntity mapEntityFromUpdateDto(UserDtoForUpdate dto) {
         if (dto == null) {
             return null;
         }
@@ -51,12 +51,12 @@ public class UserMapper {
                 .build();
     }
 
-    public UserFullDtoOut mapUserFullDtoFromEntity(UserEntity entity) {
+    public UserDtoFullOut mapUserFullDtoFromEntity(UserEntity entity) {
         if (entity == null) {
             return null;
         }
 
-        return UserFullDtoOut.builder()
+        return UserDtoFullOut.builder()
                 .username(entity.getUsername())
                 .email(entity.getEmail())
                 .image(Utils.getImageAsResponseEntity(entity.getImage()))

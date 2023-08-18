@@ -1,7 +1,7 @@
 package by.karpovich.security.api.controllers.clientController;
 
-import by.karpovich.security.api.dto.user.UserForUpdate;
-import by.karpovich.security.api.dto.user.UserFullDtoOut;
+import by.karpovich.security.api.dto.user.UserDtoForUpdate;
+import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.service.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,13 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> findById(@RequestHeader(value = "Authorization") String token) {
-        UserFullDtoOut userFullDtoOut = userServiceImpl.getYourselfBack(token);
+        UserDtoFullOut userDtoFullOut = userServiceImpl.getYourselfBack(token);
 
-        return new ResponseEntity<>(userFullDtoOut, HttpStatus.OK);
+        return new ResponseEntity<>(userDtoFullOut, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody UserForUpdate dto,
+    public ResponseEntity<?> update(@Valid @RequestBody UserDtoForUpdate dto,
                                     @PathVariable("id") String token) {
         userServiceImpl.updateUserById(token, dto);
 

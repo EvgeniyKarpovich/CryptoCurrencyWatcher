@@ -1,6 +1,7 @@
 package by.karpovich.security.service;
 
 import by.karpovich.security.api.dto.role.RoleDto;
+import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.exception.DuplicateException;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.RoleEntity;
@@ -17,20 +18,20 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class RoleServiceImpl implements RoleService {
+public class RoleServiceImpl {
 
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
 
-    @Override
     @Transactional
-    public RoleEntity saveRole(RoleDto dto) {
+    public RoleFullDtoOut saveRole(RoleDto dto) {
         validateAlreadyExists(dto, null);
 
-        return roleRepository.save(roleMapper.mapEntityFromDto(dto));
+        RoleEntity save = roleRepository.save(roleMapper.mapEntityFromDto(dto));
+
+        return roleMapper.mapRoleDtoOutFromRoleEntity(save);
     }
 
-    @Override
     public Set<RoleEntity> findRoleByName(String roleName) {
         Optional<RoleEntity> role = roleRepository.findByName(roleName);
 
@@ -43,7 +44,6 @@ public class RoleServiceImpl implements RoleService {
         return userRoles;
     }
 
-    @Override
     public RoleDto findRoleById(Long id) {
         var role = roleRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("Role with id = %s not found", id)));
@@ -51,14 +51,12 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.mapDtoFromEntity(role);
     }
 
-    @Override
     public List<RoleDto> findRolesAll() {
         List<RoleEntity> roles = roleRepository.findAll();
 
         return roleMapper.mapListDtoFromListEntity(roles);
     }
 
-    @Override
     @Transactional
     public RoleDto updateRoleById(Long id, RoleDto dto) {
         validateAlreadyExists(dto, id);
@@ -70,7 +68,6 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.mapDtoFromEntity(updated);
     }
 
-    @Override
     @Transactional
     public void deleteRoleById(Long id) {
         if (roleRepository.findById(id).isPresent()) {

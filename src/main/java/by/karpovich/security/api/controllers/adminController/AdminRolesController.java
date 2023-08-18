@@ -1,6 +1,7 @@
 package by.karpovich.security.api.controllers.adminController;
 
 import by.karpovich.security.api.dto.role.RoleDto;
+import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.service.RoleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,9 @@ public class AdminRolesController {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody RoleDto dto) {
-        roleServiceImpl.saveRole(dto);
+        RoleFullDtoOut roleFullDtoOut = roleServiceImpl.saveRole(dto);
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(roleFullDtoOut, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

@@ -1,6 +1,7 @@
 package by.karpovich.security.mapping;
 
 import by.karpovich.security.api.dto.role.RoleDto;
+import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,17 @@ public class RoleMapper {
 
         return RoleEntity.builder()
                 .name(dto.getName())
+                .build();
+    }
+
+    public RoleFullDtoOut mapRoleDtoOutFromRoleEntity(RoleEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return RoleFullDtoOut.builder()
+                .id(entity.getId())
+                .name(entity.getName())
                 .build();
     }
 

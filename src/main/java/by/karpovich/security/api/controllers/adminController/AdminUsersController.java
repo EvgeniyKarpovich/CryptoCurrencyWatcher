@@ -1,7 +1,7 @@
 package by.karpovich.security.api.controllers.adminController;
 
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
-import by.karpovich.security.api.dto.user.UserFullDtoOut;
+import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,9 +28,9 @@ public class AdminUsersController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable("id") Long id) {
-        UserFullDtoOut userFullDtoOut = userService.findById(id);
+        UserDtoFullOut userDtoFullOut = userService.findById(id);
 
-        return new ResponseEntity<>(userFullDtoOut, HttpStatus.OK);
+        return new ResponseEntity<>(userDtoFullOut, HttpStatus.OK);
     }
 
     @GetMapping("/statuses/{status}")

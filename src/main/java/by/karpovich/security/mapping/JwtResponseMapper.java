@@ -54,10 +54,9 @@ public class JwtResponseMapper {
     public UserEntity findUserByName(String username) {
         Optional<UserEntity> userByName = userRepository.findByUsername(username);
 
-        UserEntity entity = userByName.orElseThrow(
+        return userByName.orElseThrow(
                 () -> new NotFoundModelException(String.format("User with username = %s not found", username))
         );
-        return entity;
     }
 
     private List<String> mapStringRolesFromUserDetails(UserDetailsImpl userDetails) {

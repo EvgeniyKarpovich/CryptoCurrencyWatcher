@@ -9,7 +9,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserFullDtoOut {
+public class UserDtoFullOut {
 
     private String username;
 

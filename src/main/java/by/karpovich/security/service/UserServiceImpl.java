@@ -4,8 +4,8 @@ import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.authentification.RegistrationForm;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
-import by.karpovich.security.api.dto.user.UserForUpdate;
-import by.karpovich.security.api.dto.user.UserFullDtoOut;
+import by.karpovich.security.api.dto.user.UserDtoForUpdate;
+import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.UserEntity;
 import by.karpovich.security.jpa.entity.UserStatus;
@@ -30,33 +30,29 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl {
 
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
     private final JwtResponseMapper jwtResponseMapper;
 
-    @Override
     @Transactional
     public void signUp(RegistrationForm dto) {
         userRepository.save(userMapper.mapEntityFromDtoForRegForm(dto));
     }
 
-    @Override
     @Transactional
     public JwtResponse signIn(LoginForm loginForm) {
         return jwtResponseMapper.mapJwtResponseFromLoginForm(loginForm);
     }
 
-    @Override
-    public UserFullDtoOut getYourselfBack(String token) {
+    public UserDtoFullOut getYourselfBack(String token) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
         return userMapper.mapUserFullDtoFromEntity(userEntity);
     }
 
-    @Override
-    public UserFullDtoOut findById(Long id) {
+    public UserDtoFullOut findById(Long id) {
         Optional<UserEntity> optionalUser = userRepository.findById(id);
         UserEntity userEntity = optionalUser.orElseThrow(
                 () -> new NotFoundModelException(String.format("User with id = %s found", id))
@@ -65,9 +61,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.mapUserFullDtoFromEntity(userEntity);
     }
 
-    @Override
     @Transactional
-    public UserFullDtoOut updateUserById(String token, UserForUpdate dto) {
+    public UserDtoFullOut updateUserById(String token, UserDtoForUpdate dto) {
         Long userIdFromToken = getUserIdFromToken(token);
 
         UserEntity user = userMapper.mapEntityFromUpdateDto(dto);
@@ -77,7 +72,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.mapUserFullDtoFromEntity(updatedUser);
     }
 
-    @Override
     public Map<String, Object> findAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dateOfCreation").descending());
         Page<UserEntity> usersEntity = userRepository.findAll(pageable);
@@ -94,9 +88,8 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    @Override
     public List<UserDtoForFindAll> getUsersByStatus(String status) {
-        UserStatus userStatus = switch(status.toUpperCase()) {
+        UserStatus userStatus = switch (status.toUpperCase()) {
             case "ACTIVE" -> UserStatus.ACTIVE;
             case "FROZEN" -> UserStatus.FROZEN;
             case "DELETED" -> UserStatus.DELETED;
@@ -108,7 +101,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.mapListUserDtoForFindAllFromListEntity(userByStatus);
     }
 
-    @Override
     @Transactional
     public void deleteUserById(String token) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
@@ -116,7 +108,6 @@ public class UserServiceImpl implements UserService {
         userEntity.setUserStatus(UserStatus.DELETED);
     }
 
-    @Override
     @Transactional
     public void addImage(String token, MultipartFile file) {
         UserEntity userEntity = findUserEntityByIdFromToken(token);
@@ -125,7 +116,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
     }
 
-    @Override
     public UserEntity findUserByIdWhichWillReturnModel(Long id) {
         return userRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("User with username = %s not found", id))
