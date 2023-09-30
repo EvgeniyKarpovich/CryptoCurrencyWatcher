@@ -28,9 +28,11 @@ public class RoleServiceImpl implements RoleService {
     public RoleFullDtoOut saveRole(RoleDto dto) {
         validateAlreadyExists(dto, null);
 
-        RoleEntity save = roleRepository.save(roleMapper.mapEntityFromDto(dto));
-
-        return roleMapper.mapRoleDtoOutFromRoleEntity(save);
+        return Optional.of(dto)
+                .map(roleMapper::mapEntityFromDto)
+                .map(roleRepository::save)
+                .map(roleMapper::mapRoleDtoOutFromRoleEntity)
+                .orElseThrow();
     }
 
     public Set<RoleEntity> findRoleByName(String roleName) {
@@ -55,9 +57,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDto> findRolesAll() {
-        List<RoleEntity> roles = roleRepository.findAll();
-
-        return roleMapper.mapListDtoFromListEntity(roles);
+        return roleRepository.findAll().stream()
+                .map(roleMapper::mapDtoFromEntity)
+                .toList();
     }
 
     @Override
@@ -83,10 +85,13 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private void validateAlreadyExists(RoleDto dto, Long id) {
-        Optional<RoleEntity> role = roleRepository.findByName(dto.getName());
+        boolean present = roleRepository.findByName(dto.getName())
+                .filter(role -> !role.getId().equals(id))
+                .isPresent();
 
-        if (role.isPresent() && !role.get().getId().equals(id)) {
+        if (present) {
             throw new DuplicateException(String.format("Role with name = %s already exist", dto.getName()));
         }
+
     }
 }

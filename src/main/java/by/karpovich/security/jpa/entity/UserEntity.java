@@ -19,6 +19,7 @@ import java.util.Set;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "email")
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
 
