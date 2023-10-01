@@ -83,11 +83,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private void validateAlreadyExists(RoleDto dto, Long id) {
-        boolean present = roleRepository.findByName(dto.getName())
-                .filter(role -> !role.getId().equals(id))
-                .isPresent();
+        Optional<RoleEntity> role = roleRepository.findByName(dto.getName());
 
-        if (present) {
+        if (role.isPresent() && !role.get().getId().equals(id)) {
             throw new DuplicateException(String.format("Role with name = %s already exist", dto.getName()));
         }
     }

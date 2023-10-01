@@ -3,9 +3,7 @@ package by.karpovich.security.jpa.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,8 +32,8 @@ public class UserEntity extends AuditingEntity {
     @Column(name = "status")
     private UserStatus userStatus;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    private List<NotificationEntity> notifications = new ArrayList<>();
+//    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+//    private List<NotificationEntity> notifications = new ArrayList<>();
 
     @Column(name = "image")
     private String image;

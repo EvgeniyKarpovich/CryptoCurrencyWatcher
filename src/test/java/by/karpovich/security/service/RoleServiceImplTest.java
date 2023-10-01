@@ -121,6 +121,23 @@ class RoleServiceImplTest {
 
     @Test
     void updateRoleById() {
+        RoleEntity mapped = mock(RoleEntity.class);
+        RoleEntity updated = mock(RoleEntity.class);
+        RoleDto dtoOut = mock(RoleDto.class);
+        RoleDto dtoForUpdate = mock(RoleDto.class);
+
+        when(roleMapper.mapEntityFromDto(any(RoleDto.class))).thenReturn(mapped);
+        when(roleRepository.save(any(RoleEntity.class))).thenReturn(updated);
+        when(roleMapper.mapDtoFromEntity(any(RoleEntity.class))).thenReturn(dtoOut);
+
+        RoleDto result = roleService.updateRoleById(ID, dtoForUpdate);
+
+        assertEquals(result, dtoOut);
+
+        verify(roleRepository).findByName(dtoForUpdate.getName());
+        verify(roleMapper).mapEntityFromDto(dtoForUpdate);
+        verify(roleRepository).save(mapped);
+        verify(roleMapper).mapDtoFromEntity(updated);
     }
 
     @Test
