@@ -2,11 +2,7 @@ package by.karpovich.security.jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -16,8 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "roles")
-@EntityListeners(AuditingEntityListener.class)
-public class RoleEntity {
+public class RoleEntity extends AuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +23,4 @@ public class RoleEntity {
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private List<UserEntity> users;
-
-    @CreatedDate
-    @Column(name = "date_of_creation", updatable = false)
-    private Instant dateOfCreation;
-
-    @LastModifiedDate
-    @Column(name = "date_of_change")
-    private Instant dateOfChange;
 }

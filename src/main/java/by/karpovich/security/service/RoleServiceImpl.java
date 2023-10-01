@@ -57,9 +57,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDto> findRolesAll() {
-        return roleRepository.findAll().stream()
-                .map(roleMapper::mapDtoFromEntity)
-                .toList();
+        return roleMapper.mapListDtoFromListEntity(roleRepository.findAll());
     }
 
     @Override
@@ -92,6 +90,5 @@ public class RoleServiceImpl implements RoleService {
         if (present) {
             throw new DuplicateException(String.format("Role with name = %s already exist", dto.getName()));
         }
-
     }
 }

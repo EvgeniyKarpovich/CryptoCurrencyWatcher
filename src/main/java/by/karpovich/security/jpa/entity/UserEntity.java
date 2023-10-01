@@ -2,11 +2,7 @@ package by.karpovich.security.jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,9 +15,7 @@ import java.util.Set;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "email")
-@EntityListeners(AuditingEntityListener.class)
-public class UserEntity {
+public class UserEntity extends AuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,12 +54,4 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new HashSet<>();
-
-    @CreatedDate
-    @Column(name = "date_of_creation", updatable = false)
-    private Instant dateOfCreation;
-
-    @LastModifiedDate
-    @Column(name = "date_of_change")
-    private Instant dateOfChange;
 }

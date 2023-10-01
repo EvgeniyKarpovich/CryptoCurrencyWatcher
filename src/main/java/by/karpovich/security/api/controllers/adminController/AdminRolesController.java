@@ -1,8 +1,8 @@
 package by.karpovich.security.api.controllers.adminController;
 
-import by.karpovich.security.api.facades.RoleFacade;
 import by.karpovich.security.api.dto.role.RoleDto;
 import by.karpovich.security.api.dto.role.RoleFullDtoOut;
+import by.karpovich.security.service.RoleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,25 +15,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminRolesController {
 
-    private final RoleFacade rolesFacade;
+    private final RoleServiceImpl roleService;
 
     @PostMapping
     public ResponseEntity<RoleFullDtoOut> save(@RequestBody RoleDto dto) {
-        RoleFullDtoOut roleDtoOut = rolesFacade.saveRole(dto);
+        RoleFullDtoOut roleDtoOut = roleService.saveRole(dto);
 
         return new ResponseEntity<>(roleDtoOut, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RoleDto> findById(@PathVariable("id") Long id) {
-        RoleDto roleDto = rolesFacade.findRoleById(id);
+        RoleDto roleDto = roleService.findRoleById(id);
 
         return new ResponseEntity<>(roleDto, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<RoleDto>> findAll() {
-        List<RoleDto> rolesDto = rolesFacade.findRolesAll();
+        List<RoleDto> rolesDto = roleService.findRolesAll();
 
         return new ResponseEntity<>(rolesDto, HttpStatus.OK);
     }
@@ -41,14 +41,14 @@ public class AdminRolesController {
     @PutMapping("/{id}")
     public ResponseEntity<RoleDto> update(@RequestBody RoleDto dto,
                                           @PathVariable("id") Long id) {
-        RoleDto roleDto = rolesFacade.updateRoleById(id, dto);
+        RoleDto roleDto = roleService.updateRoleById(id, dto);
 
         return new ResponseEntity<>(roleDto, HttpStatus.UPGRADE_REQUIRED);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteById(@PathVariable("id") Long id) {
-        rolesFacade.deleteRoleById(id);
+        roleService.deleteRoleById(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
