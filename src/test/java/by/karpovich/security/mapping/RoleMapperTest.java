@@ -10,8 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import javax.print.attribute.standard.MediaSize;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +53,7 @@ class RoleMapperTest {
 
     @Test
     void mapListDtoFromListEntity() {
-        List<RoleEntity> listEntities = Arrays.asList(generateEntity(), generateEntity(),generateEntity());
+        List<RoleEntity> listEntities = Arrays.asList(generateEntity(), generateEntity(), generateEntity());
         List<RoleDto> result = roleMapper.mapListDtoFromListEntity(listEntities);
 
         assertThat("Wrong result size", result, hasSize(3));

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -128,7 +129,9 @@ class RoleServiceImplTest {
 
         when(roleMapper.mapEntityFromDto(any(RoleDto.class))).thenReturn(mapped);
         when(roleRepository.save(any(RoleEntity.class))).thenReturn(updated);
+//        Mockito.doReturn(updated).when(roleRepository).save(Mockito.any());
         when(roleMapper.mapDtoFromEntity(any(RoleEntity.class))).thenReturn(dtoOut);
+
 
         RoleDto result = roleService.updateRoleById(ID, dtoForUpdate);
 
