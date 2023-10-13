@@ -1,7 +1,6 @@
 package by.karpovich.security.service;
 
 import by.karpovich.security.api.dto.role.RoleDto;
-import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import by.karpovich.security.jpa.repository.RoleRepository;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -49,18 +47,18 @@ class RoleServiceImplTest {
         RoleEntity saved = mock(RoleEntity.class);
         when(roleRepository.save(any(RoleEntity.class))).thenReturn(saved);
 
-        RoleFullDtoOut returned = mock(RoleFullDtoOut.class);
-        when(roleMapper.mapRoleDtoOutFromRoleEntity(any(RoleEntity.class))).thenReturn(returned);
+        RoleDto returned = mock(RoleDto.class);
+        when(roleMapper.mapDtoFromEntity(any(RoleEntity.class))).thenReturn(returned);
 
         RoleDto dto = new RoleDto();
 
-        RoleFullDtoOut result = roleService.saveRole(dto);
+        RoleDto result = roleService.save(dto);
         assertEquals(result, returned);
 
         verify(roleRepository).findByName(dto.getName());
         verify(roleMapper).mapEntityFromDto(dto);
         verify(roleRepository).save(mapped);
-        verify(roleMapper).mapRoleDtoOutFromRoleEntity(saved);
+        verify(roleMapper).mapDtoFromEntity(saved);
     }
 
 
@@ -70,7 +68,7 @@ class RoleServiceImplTest {
 
         when(roleRepository.findByName(anyString())).thenReturn(Optional.of(entity));
 
-        Set<RoleEntity> result = roleService.findRoleByName(ROLE_NAME);
+        Set<RoleEntity> result = roleService.findByName(ROLE_NAME);
 
         assertEquals(1, result.size());
 
@@ -85,7 +83,7 @@ class RoleServiceImplTest {
         when(roleRepository.findById(anyLong())).thenReturn(Optional.of(entity));
         when(roleMapper.mapDtoFromEntity(any(RoleEntity.class))).thenReturn(dto);
 
-        RoleDto result = roleService.findRoleById(ID);
+        RoleDto result = roleService.findById(ID);
         assertEquals(result, dto);
 
         verify(roleRepository).findById(ID);
@@ -94,7 +92,7 @@ class RoleServiceImplTest {
 
     @Test
     void throwExceptionIfRoleNotFound() {
-        var ex = assertThrows(NotFoundModelException.class, () -> roleService.findRoleById(ID));
+        var ex = assertThrows(NotFoundModelException.class, () -> roleService.findById(ID));
         assertEquals(ex.getMessage(), (String.format("Role with id = %s not found", ID)));
 
         verify(roleRepository).findById(ID);
@@ -112,7 +110,7 @@ class RoleServiceImplTest {
         when(roleRepository.findAll()).thenReturn(entities);
         when(roleMapper.mapListDtoFromListEntity(anyList())).thenReturn(dtos);
 
-        List<RoleDto> result = roleService.findRolesAll();
+        List<RoleDto> result = roleService.findAll();
 
         assertArrayEquals(result.toArray(), dtos.toArray());
 
@@ -133,7 +131,7 @@ class RoleServiceImplTest {
         when(roleMapper.mapDtoFromEntity(any(RoleEntity.class))).thenReturn(dtoOut);
 
 
-        RoleDto result = roleService.updateRoleById(ID, dtoForUpdate);
+        RoleDto result = roleService.updateById(ID, dtoForUpdate);
 
         assertEquals(result, dtoOut);
 
@@ -149,7 +147,7 @@ class RoleServiceImplTest {
 
         when(roleRepository.findById(anyLong())).thenReturn(Optional.of(entity));
 
-        roleService.deleteRoleById(ID);
+        roleService.deleteById(ID);
 
         verify(roleRepository).findById(ID);
         verify(roleRepository).deleteById(ID);

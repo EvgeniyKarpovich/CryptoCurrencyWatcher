@@ -1,13 +1,15 @@
 package by.karpovich.security.service;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.role.RoleDto;
-import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.exception.DuplicateException;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import by.karpovich.security.jpa.repository.RoleRepository;
 import by.karpovich.security.mapping.RoleMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,17 +27,17 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public RoleFullDtoOut saveRole(RoleDto dto) {
+    public RoleDto save(RoleDto dto) {
         validateAlreadyExists(dto, null);
 
         return Optional.of(dto)
                 .map(roleMapper::mapEntityFromDto)
                 .map(roleRepository::save)
-                .map(roleMapper::mapRoleDtoOutFromRoleEntity)
+                .map(roleMapper::mapDtoFromEntity)
                 .orElseThrow();
     }
 
-    public Set<RoleEntity> findRoleByName(String roleName) {
+    public Set<RoleEntity> findByName(String roleName) {
         Optional<RoleEntity> role = roleRepository.findByName(roleName);
 
         var roleEntity = role.orElseThrow(
@@ -48,7 +50,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleDto findRoleById(Long id) {
+    public RoleDto findById(Long id) {
         var role = roleRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("Role with id = %s not found", id)));
 
@@ -56,13 +58,20 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleDto> findRolesAll() {
+    public List<RoleDto> findAll() {
         return roleMapper.mapListDtoFromListEntity(roleRepository.findAll());
+    }
+
+    public PageResponse<RoleDto> findAll(Pageable pageable) {
+        Page<RoleDto> page = roleRepository.findAll(pageable)
+                .map(roleMapper::mapDtoFromEntity);
+
+        return PageResponse.of(page);
     }
 
     @Override
     @Transactional
-    public RoleDto updateRoleById(Long id, RoleDto dto) {
+    public RoleDto updateById(Long id, RoleDto dto) {
         validateAlreadyExists(dto, id);
 
         var entity = roleMapper.mapEntityFromDto(dto);
@@ -74,13 +83,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public void deleteRoleById(Long id) {
+    public void deleteById(Long id) {
         if (roleRepository.findById(id).isPresent()) {
             roleRepository.deleteById(id);
         } else {
             throw new NotFoundModelException(String.format("Role with id = %s not found", id));
         }
     }
+
 
     private void validateAlreadyExists(RoleDto dto, Long id) {
         Optional<RoleEntity> role = roleRepository.findByName(dto.getName());

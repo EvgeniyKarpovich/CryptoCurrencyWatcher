@@ -1,19 +1,18 @@
 package by.karpovich.security.service;
 
 import by.karpovich.security.api.dto.role.RoleDto;
-import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 
 import java.util.List;
 
 public interface RoleService {
 
-    RoleFullDtoOut saveRole(RoleDto dto);
+    RoleDto save(RoleDto dto);
 
-    RoleDto findRoleById(Long id);
+    RoleDto findById(Long id);
 
-    List<RoleDto> findRolesAll();
+    List<RoleDto> findAll();
 
-    RoleDto updateRoleById(Long id, RoleDto dto);
+    RoleDto updateById(Long id, RoleDto dto);
 
-    void deleteRoleById(Long id);
+    void deleteById(Long id);
 }

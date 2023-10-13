@@ -1,7 +1,6 @@
 package by.karpovich.security.mapping;
 
 import by.karpovich.security.api.dto.role.RoleDto;
-import by.karpovich.security.api.dto.role.RoleFullDtoOut;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,17 +36,10 @@ class RoleMapperTest {
     }
 
     @Test
-    void mapRoleDtoOutFromRoleEntity() {
-        RoleFullDtoOut result = roleMapper.mapRoleDtoOutFromRoleEntity(generateEntity());
-
-        assertEquals(result.getId(), ID);
-        assertEquals(result.getName(), NAME);
-    }
-
-    @Test
     void mapDtoFromEntity() {
         RoleDto result = roleMapper.mapDtoFromEntity(generateEntity());
 
+        assertEquals(result.getId(), ID);
         assertEquals(result.getName(), NAME);
     }
 
@@ -59,35 +51,31 @@ class RoleMapperTest {
         assertThat("Wrong result size", result, hasSize(3));
         assertThat("Wrong result", result, allOf(
                 hasItem(allOf(
-//                        hasProperty("id", is(ID)),
+                        hasProperty("id", is(ID)),
                         hasProperty("name", is(NAME))
                 )),
                 hasItem(allOf(
-//                        hasProperty("id", is(ID)),
+                        hasProperty("id", is(ID)),
                         hasProperty("name", is(NAME))
                 )),
                 hasItem(allOf(
-//                        hasProperty("id", is(ID)),
+                        hasProperty("id", is(ID)),
                         hasProperty("name", is(NAME))
                 ))
         ));
     }
 
     private RoleEntity generateEntity() {
-        return new RoleEntity()
-                .setId(ID)
-                .setName(NAME);
-    }
-
-    private RoleDto generateDto() {
-        return RoleDto.builder()
+        return RoleEntity.builder()
+                .id(ID)
                 .name(NAME)
                 .build();
     }
 
-    private RoleFullDtoOut generateFullDtoOut() {
-        return new RoleFullDtoOut()
-                .setId(ID)
-                .setName(NAME);
+    private RoleDto generateDto() {
+        return RoleDto.builder()
+                .id(ID)
+                .name(NAME)
+                .build();
     }
 }

@@ -35,7 +35,7 @@ public class UserMapper {
                 .username(dto.getUsername())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .email(dto.getEmail())
-                .roles(roleServiceImpl.findRoleByName(ROLE_USER))
+                .roles(roleServiceImpl.findByName(ROLE_USER))
                 .userStatus(UserStatus.ACTIVE)
                 .build();
     }
