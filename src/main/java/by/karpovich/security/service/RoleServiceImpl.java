@@ -9,12 +9,12 @@ import by.karpovich.security.jpa.repository.RoleRepository;
 import by.karpovich.security.mapping.RoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -58,10 +58,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleDto> findAll() {
-        return roleMapper.mapListDtoFromListEntity(roleRepository.findAll());
-    }
-
     public PageResponse<RoleDto> findAll(Pageable pageable) {
         Page<RoleDto> page = roleRepository.findAll(pageable)
                 .map(roleMapper::mapDtoFromEntity);

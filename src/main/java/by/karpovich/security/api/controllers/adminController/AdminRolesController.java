@@ -1,13 +1,13 @@
 package by.karpovich.security.api.controllers.adminController;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.role.RoleDto;
 import by.karpovich.security.service.RoleServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/roles")
@@ -31,8 +31,8 @@ public class AdminRolesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RoleDto>> findAll() {
-        List<RoleDto> rolesDto = roleService.findAll();
+    public ResponseEntity<PageResponse<RoleDto>> findAll(Pageable pageable) {
+        PageResponse<RoleDto> rolesDto = roleService.findAll(pageable);
 
         return new ResponseEntity<>(rolesDto, HttpStatus.OK);
     }

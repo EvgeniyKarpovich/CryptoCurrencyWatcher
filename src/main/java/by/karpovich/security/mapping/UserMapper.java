@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,28 +27,24 @@ public class UserMapper {
     private final RoleServiceImpl roleServiceImpl;
 
     public UserEntity mapEntityFromDtoForRegForm(RegistrationForm dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        return UserEntity.builder()
-                .username(dto.getUsername())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .email(dto.getEmail())
-                .roles(roleServiceImpl.findByName(ROLE_USER))
-                .userStatus(UserStatus.ACTIVE)
-                .build();
+        return Optional.ofNullable(dto)
+                .map(entity -> UserEntity.builder()
+                        .username(dto.getUsername())
+                        .password(passwordEncoder.encode(dto.getPassword()))
+                        .email(dto.getEmail())
+                        .roles(roleServiceImpl.findByName(ROLE_USER))
+                        .userStatus(UserStatus.ACTIVE)
+                        .build())
+                .orElse(null);
     }
 
     public UserEntity mapEntityFromUpdateDto(UserDtoForUpdate dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        return UserEntity.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .build();
+        return Optional.ofNullable(dto)
+                .map(entity -> UserEntity.builder()
+                        .username(dto.getUsername())
+                        .email(dto.getEmail())
+                        .build())
+                .orElse(null);
     }
 
     public UserDtoFullOut mapUserFullDtoFromEntity(UserEntity entity) {
@@ -65,31 +61,25 @@ public class UserMapper {
                 .build();
     }
 
-    public UserDtoForFindAll mapUserDtoForFindAllFromEntity(UserEntity user) {
-        if (user == null) {
-            return null;
-        }
-
-        return UserDtoForFindAll.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .roles(getRolesFromUser(user))
-                .userStatus(user.getUserStatus().toString())
-                .build();
+    public UserDtoForFindAll mapUserDtoForFindAllFromEntity(UserEntity entity) {
+        return Optional.ofNullable(entity)
+                .map(dto -> UserDtoForFindAll.builder()
+                        .id(entity.getId())
+                        .username(entity.getUsername())
+                        .email(entity.getEmail())
+                        .roles(getRolesFromUser(entity))
+                        .userStatus(entity.getUserStatus().toString())
+                        .build())
+                .orElse(null);
     }
 
-    public List<UserDtoForFindAll> mapListUserDtoForFindAllFromListEntity(List<UserEntity> users) {
-        if (users == null) {
-            return null;
-        }
-
-        List<UserDtoForFindAll> usersDto = new ArrayList<>();
-
-        for (UserEntity model : users) {
-            usersDto.add(mapUserDtoForFindAllFromEntity(model));
-        }
-        return usersDto;
+    public List<UserDtoForFindAll> mapListUserDtoForFindAllFromListEntity(List<UserEntity> entities) {
+        return Optional.ofNullable(entities)
+                .map(dtos -> entities.stream()
+                        .map(this::mapUserDtoForFindAllFromEntity)
+                        .collect(Collectors.toList())
+                )
+                .orElse(null);
     }
 
     private Set<String> getRolesFromUser(UserEntity entity) {

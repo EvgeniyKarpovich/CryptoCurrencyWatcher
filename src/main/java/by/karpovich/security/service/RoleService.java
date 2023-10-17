@@ -1,8 +1,8 @@
 package by.karpovich.security.service;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.role.RoleDto;
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface RoleService {
 
@@ -10,7 +10,7 @@ public interface RoleService {
 
     RoleDto findById(Long id);
 
-    List<RoleDto> findAll();
+    PageResponse<RoleDto> findAll(Pageable pageable);
 
     RoleDto updateById(Long id, RoleDto dto);
 

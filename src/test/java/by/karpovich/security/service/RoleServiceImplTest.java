@@ -99,24 +99,24 @@ class RoleServiceImplTest {
     }
 
 
-    @Test
-    void findRolesAll() {
-        RoleEntity entity = mock(RoleEntity.class);
-        List<RoleEntity> entities = Arrays.asList(entity, entity, entity);
-
-        RoleDto dto = mock(RoleDto.class);
-        List<RoleDto> dtos = Arrays.asList(dto, dto, dto);
-
-        when(roleRepository.findAll()).thenReturn(entities);
-        when(roleMapper.mapListDtoFromListEntity(anyList())).thenReturn(dtos);
-
-        List<RoleDto> result = roleService.findAll();
-
-        assertArrayEquals(result.toArray(), dtos.toArray());
-
-        verify(roleRepository).findAll();
-        verify(roleMapper).mapListDtoFromListEntity(entities);
-    }
+//    @Test
+//    void findRolesAll() {
+//        RoleEntity entity = mock(RoleEntity.class);
+//        List<RoleEntity> entities = Arrays.asList(entity, entity, entity);
+//
+//        RoleDto dto = mock(RoleDto.class);
+//        List<RoleDto> dtos = Arrays.asList(dto, dto, dto);
+//
+//        when(roleRepository.findAll()).thenReturn(entities);
+//        when(roleMapper.mapListDtoFromListEntity(anyList())).thenReturn(dtos);
+//
+//        List<RoleDto> result = roleService.findAll();
+//
+//        assertArrayEquals(result.toArray(), dtos.toArray());
+//
+//        verify(roleRepository).findAll();
+//        verify(roleMapper).mapListDtoFromListEntity(entities);
+//    }
 
     @Test
     void updateRoleById() {
