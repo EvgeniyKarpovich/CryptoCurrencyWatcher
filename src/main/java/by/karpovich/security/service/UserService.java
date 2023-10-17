@@ -1,15 +1,16 @@
 package by.karpovich.security.service;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.authentification.RegistrationForm;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoForUpdate;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 public interface UserService {
 
@@ -21,13 +22,13 @@ public interface UserService {
 
     UserDtoFullOut getYourselfBack(String token);
 
-    UserDtoFullOut updateUserById(String token, UserDtoForUpdate dto);
+    UserDtoFullOut updateById(String token, UserDtoForUpdate dto);
 
-    Map<String, Object> findAll(int page, int size);
+    PageResponse<UserDtoForFindAll> findAll(Pageable pageable);
 
-    List<UserDtoForFindAll> getUsersByStatus(String status);
+    List<UserDtoForFindAll> findByStatus(String status);
 
-    void deleteUserById(String token);
+    void setStatus(Long id, String status);
 
     void addImage(String token, MultipartFile file);
 

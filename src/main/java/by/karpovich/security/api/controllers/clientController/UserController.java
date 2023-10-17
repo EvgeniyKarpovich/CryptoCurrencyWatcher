@@ -18,7 +18,7 @@ public class UserController {
     private final UserServiceImpl userService;
 
     @GetMapping
-    public ResponseEntity<?> findById(@RequestHeader(value = "Authorization") String token) {
+    public ResponseEntity<?> getYourselfBack(@RequestHeader(value = "Authorization") String token) {
         UserDtoFullOut userDtoFullOut = userService.getYourselfBack(token);
 
         return new ResponseEntity<>(userDtoFullOut, HttpStatus.OK);
@@ -27,14 +27,14 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@Valid @RequestBody UserDtoForUpdate dto,
                                     @PathVariable("id") String token) {
-        userService.updateUserById(token, dto);
+        userService.updateById(token, dto);
 
         return new ResponseEntity<>(String.format("%s  successfully updated", dto.getUsername()), HttpStatus.UPGRADE_REQUIRED);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable("id") String token) {
-        userService.deleteUserById(token);
+    @PostMapping("/{id}/{status}")
+    public ResponseEntity<?> setStatus(@PathVariable("id") Long id, @PathVariable("status") String status) {
+        userService.setStatus(id, status);
 
         return new ResponseEntity<>("User successfully deleted", HttpStatus.OK);
     }

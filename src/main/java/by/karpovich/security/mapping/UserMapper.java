@@ -33,7 +33,7 @@ public class UserMapper {
                         .password(passwordEncoder.encode(dto.getPassword()))
                         .email(dto.getEmail())
                         .roles(roleServiceImpl.findByName(ROLE_USER))
-                        .userStatus(UserStatus.ACTIVE)
+                        .status(UserStatus.ACTIVE)
                         .build())
                 .orElse(null);
     }
@@ -48,17 +48,15 @@ public class UserMapper {
     }
 
     public UserDtoFullOut mapUserFullDtoFromEntity(UserEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-
-        return UserDtoFullOut.builder()
-                .username(entity.getUsername())
-                .email(entity.getEmail())
-                .image(Utils.getImageAsResponseEntity(entity.getImage()))
-                .roles(getRolesFromUser(entity))
-                .userStatus(entity.getUserStatus().toString())
-                .build();
+        return Optional.ofNullable(entity)
+                .map(dto -> UserDtoFullOut.builder()
+                        .username(entity.getUsername())
+                        .email(entity.getEmail())
+                        .image(Utils.getImageAsResponseEntity(entity.getImage()))
+                        .roles(getRolesFromUser(entity))
+                        .userStatus(entity.getStatus().toString())
+                        .build())
+                .orElse(null);
     }
 
     public UserDtoForFindAll mapUserDtoForFindAllFromEntity(UserEntity entity) {
@@ -68,7 +66,7 @@ public class UserMapper {
                         .username(entity.getUsername())
                         .email(entity.getEmail())
                         .roles(getRolesFromUser(entity))
-                        .userStatus(entity.getUserStatus().toString())
+                        .userStatus(entity.getStatus().toString())
                         .build())
                 .orElse(null);
     }

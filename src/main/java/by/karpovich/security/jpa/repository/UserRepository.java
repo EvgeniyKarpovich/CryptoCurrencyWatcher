@@ -5,6 +5,7 @@ import by.karpovich.security.jpa.entity.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
@@ -21,8 +22,16 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, PagingA
 
     Page<UserEntity> findAll(Pageable pageable);
 
-    List<UserEntity> findByUserStatus(UserStatus userStatus);
+    List<UserEntity> findByStatus(UserStatus status);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.applicationNotification = true")
-    List<UserEntity> findAllWithApplicationNotification();
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE UserEntity u 
+            SET u.status = :status
+            where u.id = :id
+            """)
+    void setStatus(Long id, UserStatus status);
+
+//    @Query("SELECT u FROM UserEntity u WHERE u.applicationNotification = true")
+//    List<UserEntity> findAllWithApplicationNotification();
 }

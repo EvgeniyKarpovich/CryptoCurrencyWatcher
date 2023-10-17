@@ -30,7 +30,7 @@ public class UserEntity extends AuditingEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private UserStatus userStatus;
+    private UserStatus status;
 
 //    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
 //    private List<NotificationEntity> notifications = new ArrayList<>();

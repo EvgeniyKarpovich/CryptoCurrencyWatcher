@@ -1,5 +1,6 @@
 package by.karpovich.security.service;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.authentification.RegistrationForm;
@@ -16,17 +17,12 @@ import by.karpovich.security.security.JwtUtils;
 import by.karpovich.security.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,51 +47,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDtoFullOut getYourselfBack(String token) {
-        UserEntity userEntity = findUserEntityByIdFromToken(token);
-        return userMapper.mapUserFullDtoFromEntity(userEntity);
+        return userMapper.mapUserFullDtoFromEntity(findUserByIdFromToken(token));
     }
 
     @Override
     public UserDtoFullOut findById(Long id) {
-        Optional<UserEntity> optionalUser = userRepository.findById(id);
-        UserEntity userEntity = optionalUser.orElseThrow(
+        var entity = userRepository.findById(id).orElseThrow(
                 () -> new NotFoundModelException(String.format("User with id = %s found", id))
         );
-
-        return userMapper.mapUserFullDtoFromEntity(userEntity);
+        return userMapper.mapUserFullDtoFromEntity(entity);
     }
 
     @Override
     @Transactional
-    public UserDtoFullOut updateUserById(String token, UserDtoForUpdate dto) {
-        Long userIdFromToken = getUserIdFromToken(token);
+    public UserDtoFullOut updateById(String token, UserDtoForUpdate dto) {
+        var entity = userMapper.mapEntityFromUpdateDto(dto);
+        entity.setId(getUserIdFromToken(token));
+        var updatedEntity = userRepository.save(entity);
 
-        UserEntity user = userMapper.mapEntityFromUpdateDto(dto);
-        user.setId(userIdFromToken);
-        UserEntity updatedUser = userRepository.save(user);
-
-        return userMapper.mapUserFullDtoFromEntity(updatedUser);
+        return userMapper.mapUserFullDtoFromEntity(updatedEntity);
     }
 
     @Override
-    public Map<String, Object> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("dateOfCreation").descending());
-        Page<UserEntity> usersEntity = userRepository.findAll(pageable);
-        List<UserEntity> content = usersEntity.getContent();
+    public PageResponse<UserDtoForFindAll> findAll(Pageable pageable) {
+        Page<UserDtoForFindAll> dtos = userRepository.findAll(pageable)
+                .map(userMapper::mapUserDtoForFindAllFromEntity);
 
-        List<UserDtoForFindAll> usersDto = userMapper.mapListUserDtoForFindAllFromListEntity(content);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("users", usersDto);
-        response.put("currentPage", usersEntity.getNumber());
-        response.put("totalItems", usersEntity.getTotalElements());
-        response.put("totalPages", usersEntity.getTotalPages());
-
-        return response;
+        return PageResponse.of(dtos);
     }
 
     @Override
-    public List<UserDtoForFindAll> getUsersByStatus(String status) {
+    public List<UserDtoForFindAll> findByStatus(String status) {
         UserStatus userStatus = switch (status.toUpperCase()) {
             case "ACTIVE" -> UserStatus.ACTIVE;
             case "FROZEN" -> UserStatus.FROZEN;
@@ -103,26 +85,32 @@ public class UserServiceImpl implements UserService {
             default -> throw new IllegalArgumentException("Invalid user status: " + status);
         };
 
-        List<UserEntity> userByStatus = userRepository.findByUserStatus(userStatus);
-
-        return userMapper.mapListUserDtoForFindAllFromListEntity(userByStatus);
+        return userMapper.mapListUserDtoForFindAllFromListEntity(userRepository.findByStatus(userStatus));
     }
 
     @Override
     @Transactional
-    public void deleteUserById(String token) {
-        UserEntity userEntity = findUserEntityByIdFromToken(token);
-
-        userEntity.setUserStatus(UserStatus.DELETED);
+    public void setStatus(Long id, String status) {
+        if (userRepository.findById(id).isPresent()) {
+            UserStatus userStatus = switch (status.toUpperCase()) {
+                case "ACTIVE" -> UserStatus.ACTIVE;
+                case "FROZEN" -> UserStatus.FROZEN;
+                case "DELETED" -> UserStatus.DELETED;
+                default -> throw new IllegalArgumentException("Invalid user status: " + status);
+            };
+            userRepository.setStatus(id, userStatus);
+        } else {
+            throw new NotFoundModelException(String.format("UserEntity with id = %s not found", id));
+        }
     }
 
     @Override
     @Transactional
     public void addImage(String token, MultipartFile file) {
-        UserEntity userEntity = findUserEntityByIdFromToken(token);
+        var entity = findUserByIdFromToken(token);
 
-        userEntity.setImage(Utils.saveFile(file));
-        userRepository.save(userEntity);
+        entity.setImage(Utils.saveFile(file));
+        userRepository.save(entity);
     }
 
     private UserEntity findUserByIdWhichWillReturnModel(Long id) {
@@ -131,10 +119,8 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    private UserEntity findUserEntityByIdFromToken(String token) {
-        Long userIdFromToken = getUserIdFromToken(token);
-
-        return findUserByIdWhichWillReturnModel(userIdFromToken);
+    private UserEntity findUserByIdFromToken(String token) {
+        return findUserByIdWhichWillReturnModel(getUserIdFromToken(token));
     }
 
     private Long getUserIdFromToken(String authorization) {

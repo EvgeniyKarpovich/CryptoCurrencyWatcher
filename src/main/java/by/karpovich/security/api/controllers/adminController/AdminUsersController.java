@@ -1,15 +1,19 @@
 package by.karpovich.security.api.controllers.adminController;
 
+import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/users")
@@ -19,11 +23,10 @@ public class AdminUsersController {
     private final UserServiceImpl userService;
 
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> usersDto = userService.findAll(page, size);
+    public ResponseEntity<?> findAll(Pageable pageable) {
+        PageResponse<UserDtoForFindAll> dtos = userService.findAll(pageable);
 
-        return new ResponseEntity<>(usersDto, HttpStatus.OK);
+        return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -34,8 +37,8 @@ public class AdminUsersController {
     }
 
     @GetMapping("/statuses/{status}")
-    public ResponseEntity<?> getUsersByStatus(@PathVariable("status") String status) {
-        List<UserDtoForFindAll> usersByStatus = userService.getUsersByStatus(status);
+    public ResponseEntity<?> findUsersByStatus(@PathVariable("status") String status) {
+        List<UserDtoForFindAll> usersByStatus = userService.findByStatus(status);
 
         return new ResponseEntity<>(usersByStatus, HttpStatus.OK);
     }

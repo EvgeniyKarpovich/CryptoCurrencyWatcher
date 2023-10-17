@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,11 +51,8 @@ public class JwtResponseMapper {
     }
 
     public UserEntity findUserByName(String username) {
-        Optional<UserEntity> userByName = userRepository.findByUsername(username);
-
-        return userByName.orElseThrow(
-                () -> new NotFoundModelException(String.format("User with username = %s not found", username))
-        );
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundModelException(String.format("User with username = %s not found", username)));
     }
 
     private List<String> mapStringRolesFromUserDetails(UserDetailsImpl userDetails) {
