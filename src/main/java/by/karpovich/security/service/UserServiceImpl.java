@@ -17,7 +17,9 @@ import by.karpovich.security.security.JwtUtils;
 import by.karpovich.security.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,7 +72,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<UserDtoForFindAll> findAll(Pageable pageable) {
-        Page<UserDtoForFindAll> dtos = userRepository.findAll(pageable)
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("dateOfCreation").descending());
+        Page<UserDtoForFindAll> dtos = userRepository.findAll(pageRequest)
                 .map(userMapper::mapUserDtoForFindAllFromEntity);
 
         return PageResponse.of(dtos);
@@ -115,8 +118,7 @@ public class UserServiceImpl implements UserService {
 
     private UserEntity findUserByIdWhichWillReturnModel(Long id) {
         return userRepository.findById(id).orElseThrow(
-                () -> new NotFoundModelException(String.format("User with username = %s not found", id))
-        );
+                () -> new NotFoundModelException(String.format("User with username = %s not found", id)));
     }
 
     private UserEntity findUserByIdFromToken(String token) {

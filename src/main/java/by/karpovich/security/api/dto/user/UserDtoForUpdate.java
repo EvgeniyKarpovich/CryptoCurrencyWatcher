@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -19,4 +20,6 @@ public class UserDtoForUpdate {
     @ValidEmail
     @NotBlank(message = "Enter email")
     private String email;
+
+    private MultipartFile image;
 }

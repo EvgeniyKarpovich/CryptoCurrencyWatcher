@@ -12,10 +12,12 @@ import by.karpovich.security.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,6 +45,10 @@ public class UserMapper {
                 .map(entity -> UserEntity.builder()
                         .username(dto.getUsername())
                         .email(dto.getEmail())
+                        .image(Optional.ofNullable(dto.getImage())
+                                .filter(Predicate.not(MultipartFile::isEmpty))
+                                .map(MultipartFile::getOriginalFilename)
+                                .orElse(null))
                         .build())
                 .orElse(null);
     }
