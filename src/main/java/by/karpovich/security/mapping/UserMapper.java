@@ -1,23 +1,19 @@
 package by.karpovich.security.mapping;
 
-import by.karpovich.security.api.dto.authentification.RegistrationForm;
+import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
-import by.karpovich.security.api.dto.user.UserDtoForUpdate;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.jpa.entity.RoleEntity;
 import by.karpovich.security.jpa.entity.UserEntity;
 import by.karpovich.security.jpa.entity.UserStatus;
 import by.karpovich.security.service.RoleServiceImpl;
-import by.karpovich.security.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,9 +24,9 @@ public class UserMapper {
     private final BCryptPasswordEncoder passwordEncoder;
     private final RoleServiceImpl roleServiceImpl;
 
-    public UserEntity mapEntityFromDtoForRegForm(RegistrationForm dto) {
+    public UserEntity mapEntityFromCreateUpdateDto(UserDtoForCreateUpdate dto) {
         return Optional.ofNullable(dto)
-                .map(entity -> UserEntity.builder()
+                .map(userDto -> UserEntity.builder()
                         .username(dto.getUsername())
                         .password(passwordEncoder.encode(dto.getPassword()))
                         .email(dto.getEmail())
@@ -40,25 +36,11 @@ public class UserMapper {
                 .orElse(null);
     }
 
-    public UserEntity mapEntityFromUpdateDto(UserDtoForUpdate dto) {
-        return Optional.ofNullable(dto)
-                .map(entity -> UserEntity.builder()
-                        .username(dto.getUsername())
-                        .email(dto.getEmail())
-                        .image(Optional.ofNullable(dto.getImage())
-                                .filter(Predicate.not(MultipartFile::isEmpty))
-                                .map(MultipartFile::getOriginalFilename)
-                                .orElse(null))
-                        .build())
-                .orElse(null);
-    }
-
     public UserDtoFullOut mapUserFullDtoFromEntity(UserEntity entity) {
         return Optional.ofNullable(entity)
                 .map(dto -> UserDtoFullOut.builder()
                         .username(entity.getUsername())
                         .email(entity.getEmail())
-                        .image(Utils.getImageAsResponseEntity(entity.getImage()))
                         .roles(getRolesFromUser(entity))
                         .userStatus(entity.getStatus().toString())
                         .build())

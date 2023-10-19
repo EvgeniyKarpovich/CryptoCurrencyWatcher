@@ -3,9 +3,8 @@ package by.karpovich.security.service;
 import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
-import by.karpovich.security.api.dto.authentification.RegistrationForm;
+import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
-import by.karpovich.security.api.dto.user.UserDtoForUpdate;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.UserEntity;
@@ -22,9 +21,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +35,16 @@ public class UserServiceImpl implements UserService {
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
     private final JwtResponseMapper jwtResponseMapper;
+    private final ImageService imageService;
 
     @Override
     @Transactional
-    public void signUp(RegistrationForm dto) {
-        userRepository.save(userMapper.mapEntityFromDtoForRegForm(dto));
+    public UserDtoFullOut signUp(UserDtoForCreateUpdate userDto) {
+        return Optional.of(userDto)
+                .map(userMapper::mapEntityFromCreateUpdateDto)
+                .map(userRepository::save)
+                .map(userMapper::mapUserFullDtoFromEntity)
+                .orElseThrow();
     }
 
     @Override
@@ -62,8 +68,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDtoFullOut updateById(String token, UserDtoForUpdate dto) {
-        var entity = userMapper.mapEntityFromUpdateDto(dto);
+    public UserDtoFullOut updateById(String token, UserDtoForCreateUpdate dto) {
+        var entity = userMapper.mapEntityFromCreateUpdateDto(dto);
         entity.setId(getUserIdFromToken(token));
         var updatedEntity = userRepository.save(entity);
 
@@ -115,6 +121,14 @@ public class UserServiceImpl implements UserService {
         entity.setImage(Utils.saveFile(file));
         userRepository.save(entity);
     }
+    @Override
+    public Optional<byte[]> findAvatar(String token) {
+        return userRepository.findById(getUserIdFromToken(token))
+                .map(UserEntity::getImage)
+                .filter(StringUtils::hasText)
+                .flatMap(imageService::get);
+    }
+
 
     private UserEntity findUserByIdWhichWillReturnModel(Long id) {
         return userRepository.findById(id).orElseThrow(

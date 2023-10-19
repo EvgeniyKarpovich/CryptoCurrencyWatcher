@@ -1,31 +1,35 @@
 package by.karpovich.security.service;
 
-import lombok.AllArgsConstructor;
+import by.karpovich.security.utils.Utils;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ImageService {
 
     @Value("${app.image.bucket}")
-    private final String bucket;
+    private String bucket;
+
+    @Transactional
+    public void addImage(String token, MultipartFile file) {
+        Utils.saveFile(file);
+    }
 
     @SneakyThrows
-    public void upload(String imagePath, InputStream content) {
+    public Optional<byte[]> get(String imagePath) {
         Path fullImagePath = Path.of(bucket, imagePath);
 
-        try (content) {
-            Files.createDirectories(fullImagePath.getParent());
-            Files.write(fullImagePath, content.readAllBytes(), CREATE, TRUNCATE_EXISTING);
-        }
+        return Files.exists(fullImagePath)
+                ? Optional.of(Files.readAllBytes(fullImagePath))
+                : Optional.empty();
     }
 }
