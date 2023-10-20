@@ -6,6 +6,7 @@ import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
+import by.karpovich.security.api.dto.user.UserFilter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,4 +35,5 @@ public interface UserService {
 
     void addImage(String token, MultipartFile file);
 
+    PageResponse<UserDtoForFindAll> findByPredicates(UserFilter filter, Pageable pageable);
 }

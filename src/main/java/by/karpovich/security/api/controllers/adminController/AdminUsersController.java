@@ -3,15 +3,13 @@ package by.karpovich.security.api.controllers.adminController;
 import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
+import by.karpovich.security.api.dto.user.UserFilter;
 import by.karpovich.security.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,5 +39,12 @@ public class AdminUsersController {
         List<UserDtoForFindAll> usersByStatus = userService.findByStatus(status);
 
         return new ResponseEntity<>(usersByStatus, HttpStatus.OK);
+    }
+
+    @GetMapping("/filters")
+    public ResponseEntity<?> findByCriteria(@RequestBody UserFilter filter, Pageable pageable) {
+        PageResponse<UserDtoForFindAll> byCriteria = userService.findByPredicates(filter, pageable);
+
+        return new ResponseEntity<>(byCriteria, HttpStatus.OK);
     }
 }

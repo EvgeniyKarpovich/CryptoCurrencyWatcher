@@ -6,14 +6,17 @@ import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
+import by.karpovich.security.api.dto.user.UserFilter;
 import by.karpovich.security.exception.NotFoundModelException;
 import by.karpovich.security.jpa.entity.UserEntity;
 import by.karpovich.security.jpa.entity.UserStatus;
+import by.karpovich.security.jpa.querydsl.QPredicates;
 import by.karpovich.security.jpa.repository.UserRepository;
 import by.karpovich.security.mapping.JwtResponseMapper;
 import by.karpovich.security.mapping.UserMapper;
 import by.karpovich.security.security.JwtUtils;
 import by.karpovich.security.utils.Utils;
+import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+
+import static by.karpovich.security.jpa.entity.QUserEntity.userEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +59,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public PageResponse<UserDtoForFindAll> findByPredicates(UserFilter filter, Pageable pageable) {
+        Predicate predicate = QPredicates.builder()
+                .add(filter.username(), userEntity.username::containsIgnoreCase)
+                .build();
+
+        Page<UserDtoForFindAll> usersDto = userRepository.findAll(predicate, pageable)
+                .map(userMapper::mapUserDtoForFindAllFromEntity);
+
+        return PageResponse.of(usersDto);
+    }
+
+    @Override
     public UserDtoFullOut getYourselfBack(String token) {
         return userMapper.mapUserFullDtoFromEntity(findUserByIdFromToken(token));
     }
@@ -78,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResponse<UserDtoForFindAll> findAll(Pageable pageable) {
-        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("dateOfCreation").descending());
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("username").descending());
         Page<UserDtoForFindAll> dtos = userRepository.findAll(pageRequest)
                 .map(userMapper::mapUserDtoForFindAllFromEntity);
 
@@ -121,6 +138,7 @@ public class UserServiceImpl implements UserService {
         entity.setImage(Utils.saveFile(file));
         userRepository.save(entity);
     }
+
     @Override
     public Optional<byte[]> findAvatar(String token) {
         return userRepository.findById(getUserIdFromToken(token))
@@ -128,7 +146,6 @@ public class UserServiceImpl implements UserService {
                 .filter(StringUtils::hasText)
                 .flatMap(imageService::get);
     }
-
 
     private UserEntity findUserByIdWhichWillReturnModel(Long id) {
         return userRepository.findById(id).orElseThrow(
