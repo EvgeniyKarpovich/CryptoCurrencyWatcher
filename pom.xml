@@ -67,12 +67,6 @@
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-spatial</artifactId>
-            <version>${querydsl.version}</version>
-            <classifier>jakarta</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>${querydsl.version}</version>
             <classifier>jakarta</classifier>
@@ -111,7 +105,7 @@
             <version>${gson.version}</version>
         </dependency>
 
-<!--        Swagger-->
+        <!--        Swagger-->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
