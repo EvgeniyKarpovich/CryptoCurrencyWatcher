@@ -28,6 +28,15 @@ public interface UserRepository extends
 
     List<UserEntity> findByStatus(UserStatus status);
 
+    @Query("""
+            SELECT u.*
+            FROM UserEntity u
+            JOIN user_roles ur ON u.id = ur.user_id
+            JOIN roles r ON ur.role_id = r.id
+            WHERE r.status = 'ACTIVE';
+            """)
+    List<UserEntity> findByRole(String role);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE UserEntity u 

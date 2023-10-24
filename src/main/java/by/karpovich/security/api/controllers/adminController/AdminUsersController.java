@@ -5,6 +5,7 @@ import by.karpovich.security.api.dto.user.UserDtoForFindAll;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.api.dto.user.UserFilter;
 import by.karpovich.security.service.UserServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
+@RequestMapping("/api/admin/users")
+@Tag(name = "AdminUsersController", description = "api for users(admin)")
 public class AdminUsersController {
 
     private final UserServiceImpl userService;
@@ -42,7 +44,7 @@ public class AdminUsersController {
     }
 
     @GetMapping("/filters")
-    public ResponseEntity<?> findByCriteria(@RequestBody UserFilter filter, Pageable pageable) {
+    public ResponseEntity<?> findByPredicate(@RequestBody UserFilter filter, Pageable pageable) {
         PageResponse<UserDtoForFindAll> byCriteria = userService.findByPredicates(filter, pageable);
 
         return new ResponseEntity<>(byCriteria, HttpStatus.OK);

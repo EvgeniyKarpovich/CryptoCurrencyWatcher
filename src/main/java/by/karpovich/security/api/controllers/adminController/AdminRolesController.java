@@ -3,6 +3,7 @@ package by.karpovich.security.api.controllers.adminController;
 import by.karpovich.security.api.dto.PageResponse;
 import by.karpovich.security.api.dto.role.RoleDto;
 import by.karpovich.security.service.RoleServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -10,8 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/roles")
 @RequiredArgsConstructor
+@RequestMapping("/api/admin/roles")
+@Tag(name = "AdminRolesController", description = "api for roles(admin)")
 public class AdminRolesController {
 
     private final RoleServiceImpl roleService;

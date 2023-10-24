@@ -4,6 +4,7 @@ import by.karpovich.security.api.dto.authentification.JwtResponse;
 import by.karpovich.security.api.dto.authentification.LoginForm;
 import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.service.UserServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -16,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
+@Tag(name = "AuthController", description = "api for authentication")
 public class AuthController {
 
     private final UserServiceImpl userService;

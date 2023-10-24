@@ -3,6 +3,7 @@ package by.karpovich.security.api.controllers.clientController;
 import by.karpovich.security.api.dto.user.UserDtoForCreateUpdate;
 import by.karpovich.security.api.dto.user.UserDtoFullOut;
 import by.karpovich.security.service.UserServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -15,21 +16,22 @@ import org.springframework.web.multipart.MultipartFile;
 import static org.springframework.http.ResponseEntity.notFound;
 
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
+@RequestMapping("/api/users")
+@Tag(name = "UserController", description = "api for users(client)")
 public class UserController {
 
     private final UserServiceImpl userService;
 
     @GetMapping
-    public ResponseEntity<?> getYourselfBack(@RequestHeader(value = "Authorization") String token) {
+    public ResponseEntity<?> getYourselfBack(/*@ApiParam(value = "auth token") */@RequestHeader(value = "Authorization") String token) {
         UserDtoFullOut userDtoFullOut = userService.getYourselfBack(token);
 
         return new ResponseEntity<>(userDtoFullOut, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@Valid @RequestBody UserDtoForCreateUpdate dto,
+    public ResponseEntity<?> update(  @Valid @RequestBody UserDtoForCreateUpdate dto,
                                     @PathVariable("id") String token) {
         userService.updateById(token, dto);
 
